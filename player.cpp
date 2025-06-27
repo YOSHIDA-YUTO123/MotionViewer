@@ -19,6 +19,7 @@
 #include"math.h"
 #include <filesystem>
 #include <iomanip>
+#include "explosion.h"
 
 using namespace math; // 名前空間を使用する
 using namespace std;
@@ -51,6 +52,8 @@ CPlayer::CPlayer(int nPriority) : CObject(nPriority)
 	m_nModelIndex = 0;
 	m_bMotionView = false;
 	m_fJumpHeight = NULL;
+	m_nSmockModel = NULL;
+	m_bViewMode = false;
 }
 
 //===================================================
@@ -75,9 +78,7 @@ HRESULT CPlayer::Init(void)
 		m_pMotion->Init();
 		m_pMotion->Update(&m_apModel[0], m_nNumModel,false);
 	}
-	m_fSpeed = MOVE_SPEED;
 
-	m_fJumpHeight = PLAYER_JUMP_HEIGHT;
 	return S_OK;
 }
 
@@ -201,6 +202,12 @@ void CPlayer::Update(void)
 	// 重力を加算
 	m_move.y += -MAX_GLABITY;
 
+	if (m_pMotion->GetEventFrame(MOTIONTYPE_MOVE))
+	{
+		// 煙の生成
+		CExplosion::Create(D3DXVECTOR3(m_pos.x,m_pos.y + 5.0f,m_pos.z), D3DXVECTOR3(15.0f, 15.0f, 0.0f), WHITE, 4, 3, 5);
+	}
+
 	if (m_pShadow != nullptr)
 	{
 		pMesh = CManager::GetMeshField();
@@ -281,8 +288,16 @@ void CPlayer::Draw(void)
 
 	for (int nCnt = 0; nCnt < m_nNumModel; nCnt++)
 	{
+		// モデルがあったら
 		if (m_apModel[nCnt] != nullptr)
 		{
+			if (m_bViewMode == true)
+			{
+				// 描画処理
+				m_apModel[nCnt]->Draw();
+
+				continue;
+			}
 			if (m_nModelIndex == nCnt)
 			{
 				// 描画処理
@@ -489,8 +504,6 @@ void CPlayer::MoveJoypad(CInputJoypad* pJoypad)
 //===================================================
 bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 {
-	static bool bViewMode = false;
-
 	// 位置,大きさの設定
 	pImGui->SetPosition(ImVec2(0.0f, 0.0f));
 	pImGui->SetSize(ImVec2(400.0f, 500.0f));
@@ -513,11 +526,11 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 	D3DXVECTOR3 Angle = m_apModel[m_nModelIndex]->GetRotaition();
 	D3DXVECTOR3 pos = m_apModel[m_nModelIndex]->GetPosition();;
 
-	if (ImGui::RadioButton(u8"ビューモード", bViewMode))
+	if (ImGui::RadioButton(u8"ビューモード", m_bViewMode))
 	{
-		bViewMode = bViewMode ? false : true;
+		m_bViewMode = m_bViewMode ? false : true;
 
-		if (bViewMode == false)
+		if (m_bViewMode == false)
 		{
 			// モデルの位置のリセット
 			m_pMotion->Reset(&m_apModel[0],0);
@@ -526,14 +539,14 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 
 	ImGui::SameLine();
 
-	const char* cMode = bViewMode ? "ON" : "OFF";
+	const char* cMode = m_bViewMode ? "ON" : "OFF";
 
 	ImGui::Text(u8"[ %s ]", cMode);
 
 	// モーションの情報の設定
-	m_pMotion->MotionSetElement(pImGui, &m_apModel[0], bViewMode);
+	m_pMotion->MotionSetElement(pImGui, &m_apModel[0], m_bViewMode);
 
-	if (bViewMode == true)
+	if (m_bViewMode == true)
 	{
 		ImGui::PushItemWidth(150); // 幅250ピクセルにする
 
@@ -574,7 +587,7 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 	else
 	{
 		// 無効化するブロック
-		if (bViewMode == true)
+		if (m_bViewMode == true)
 		{
 			ImGui::BeginDisabled(); // これで以降のUIがグレーアウト＆操作不可になる
 		}
@@ -773,14 +786,14 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 		//}
 
 
-		if (bViewMode == true)
+		if (m_bViewMode == true)
 		{
 			ImGui::EndDisabled(); // 無効化を終了
 		}
 	}
 	pImGui->End();
 
-	return bViewMode;
+	return m_bViewMode;
 }
 
 //===================================================
@@ -902,6 +915,15 @@ void CPlayer::LoadSystemIni(void)
 }
 
 //===================================================
+// プレイヤーの設定処理
+//===================================================
+void CPlayer::SetPlayer(const float fSpeed, const float fJumpHeight)
+{
+	m_fSpeed = fSpeed;
+	m_fJumpHeight = fJumpHeight;
+}
+
+//===================================================
 // プレイヤーのモーションの遷移
 //===================================================
 void CPlayer::TransitionMotion(void)
@@ -957,7 +979,6 @@ CPlayer* CPlayer::Create(const D3DXVECTOR3 pos, const D3DXVECTOR3 rot)
 
 	pPlayer->m_pos = pos;
 	pPlayer->m_rot = rot;
-	pPlayer->Init();
 
 	return pPlayer;
 }

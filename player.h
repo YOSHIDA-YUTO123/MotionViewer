@@ -66,6 +66,7 @@ public:
 	bool SetPlayerModelElement(CImGuiManager* pImGui);
 	void SaveOffset(const char* pFileName);
 	void LoadSystemIni(void);
+	void SetPlayer(const float fSpeed, const float fJumpHeight);
 
 	void SetPos(const D3DXVECTOR3 pos) { m_pos = pos; }
 	void SetRot(const D3DXVECTOR3 rot) { m_rot = rot; }
@@ -91,6 +92,8 @@ private:
 	int m_nModelIndex;				// モデルのインデックス
 	int m_nParentIndex;				// 親モデルのインデックス
 	int m_nNumModel;				// モデルの最大数
+	int m_nSmockModel;				// 煙を出すモデル		
+	bool m_bViewMode;				// ビューモードかどうか
 	bool m_bMotionView;				// モーションのビューかどうか
 	bool m_bJump;					// ジャンプできるかどうか
 	bool m_bDash;					// 走ってるかどうか

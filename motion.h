@@ -100,6 +100,7 @@ public:
 	void SaveDataTxt(const char* pFileName);
 	void SaveDataJson(const char* pFileName);
 	bool GetLoad(void) const { return m_pLoader ? true : false; }
+	bool GetEventFrame(const int motiontype);
 private:
 	void UpdateCurrentMotion(CModel** pModel, int nIdx);
 	void UpdateBlendMotion(CModel** pModel, int nIdx);

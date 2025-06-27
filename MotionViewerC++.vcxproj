@@ -150,9 +150,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="billboard.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="dome.cpp" />
+    <ClCompile Include="explosion.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imguimaneger.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
@@ -188,9 +190,11 @@
     <ClCompile Include="textureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="billboard.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="dome.h" />
+    <ClInclude Include="explosion.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imguimaneger.h" />

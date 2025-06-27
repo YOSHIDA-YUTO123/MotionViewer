@@ -317,6 +317,26 @@ void CMotion::SaveDataJson(const char* pFileName)
 }
 
 //===================================================
+// イベントフレームの判定
+//===================================================
+bool CMotion::GetEventFrame(const int motiontype)
+{
+	// 種類が違ったら
+	if (m_nType != motiontype) return false;
+
+	// イベントの総数分回す
+	for (int nCnt = 0; nCnt < m_aInfo[motiontype].nNumEvent; nCnt++)
+	{
+		// 判定がはじまったら
+		if (m_nAllCount >= m_aInfo[motiontype].aEventFrame[nCnt].nStart && m_nAllCount <= m_aInfo[motiontype].aEventFrame[nCnt].nEnd)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+//===================================================
 // 終了処理
 //===================================================
 void CMotion::Uninit(void)
@@ -784,7 +804,7 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 
 		ImGui::PushItemWidth(150); // 幅150ピクセルにする
 
-		if (ImGui::Button(u8"＋") && m_aInfo[m_nSelectMotion].nNumEvent < MAX_EVENT - 1)
+		if (ImGui::Button(u8"＋") && m_aInfo[m_nSelectMotion].nNumEvent < MAX_EVENT)
 		{
 			// イベントフレームの総数を増やす
 			m_aInfo[m_nSelectMotion].nNumEvent++;
@@ -807,11 +827,7 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 		// イベントフレームがあるなら
 		if (m_aInfo[m_nSelectMotion].nNumEvent > 0)
 		{
-			int nIdx = m_nIdxEvent + 1;
-
-			ImGui::SliderInt(u8"イベントフレームの選択", &nIdx, 1, m_aInfo[m_nSelectMotion].nNumEvent);
-
-			m_nIdxEvent = nIdx - 1;
+			ImGui::SliderInt(u8"イベントフレームの選択", &m_nIdxEvent, 0, m_aInfo[m_nSelectMotion].nNumEvent - 1);
 		}
 
 		// イベントフレームの総数が0より上なら
@@ -1115,10 +1131,35 @@ bool CLoderText::LoadModel(CModel** ppModel, const int nMaxSize, int nCnt, strin
 //===================================================
 bool CLoderText::LoadCharacterSet(CModel** ppModel, string line, string input)
 {
+	// プレイヤーの取得
+	CPlayer* pPlayer = CManager::GetPlayer();
+
 	static int nIdx = 0;
 	int nNumParts = 0;
 	int nParent = 0;
 	D3DXVECTOR3 offset = VEC3_NULL;
+
+	static float fSpeed = 0.0f;
+	static float fJumpHeight = 0.0f;
+
+	if (line.find("MOVE") != string::npos)
+	{
+		// 数値を読み込む準備
+		istringstream value_Input = SetInputvalue(input);
+
+		// 数値を代入する
+		value_Input >> fSpeed;
+	}
+	if (line.find("JUMP") != string::npos)
+	{
+		// 数値を読み込む準備
+		istringstream value_Input = SetInputvalue(input);
+
+		// 数値を代入する
+		value_Input >> fJumpHeight;
+
+		pPlayer->SetPlayer(fSpeed, fJumpHeight);
+	}
 
 	if (line.find("NUM_PARTS") != string::npos)
 	{
@@ -1207,6 +1248,8 @@ void CLoderText::LoadMotionSet(CLoderText* pLoader, ifstream& File, string nowLi
 	int loop = 0;
 	int nKey = 0;
 	int nCntModel = 0;
+	int nStartEvent = 0;
+	int nEndEvent = 0;
 
 	if (nowLine.find("MOTIONSET") != string::npos)
 	{
@@ -1241,6 +1284,48 @@ void CLoderText::LoadMotionSet(CLoderText* pLoader, ifstream& File, string nowLi
 
 				// 数値を代入する
 				value_Input >> m_aInfo[nNum].nNumkey;
+			}
+
+			if (line.find("NUM_EVENT") != string::npos)
+			{
+				// = から先を求める
+				input = line.substr(equal_pos + 1);
+
+				// 数値を読み込む準備
+				istringstream value_Input = SetInputvalue(input);
+
+				// 数値を代入する
+				value_Input >> m_aInfo[nNum].nNumEvent;
+			}
+
+			if (line.find("START_FRAME") != string::npos)
+			{
+				// = から先を求める
+				input = line.substr(equal_pos + 1);
+
+				// 数値を読み込む準備
+				istringstream value_Input = SetInputvalue(input);
+
+				// 数値を代入する
+				while (value_Input >> m_aInfo[nNum].aEventFrame[nStartEvent].nStart)
+				{
+					nStartEvent++;
+				}
+			}
+
+			if (line.find("END_FRAME") != string::npos)
+			{
+				// = から先を求める
+				input = line.substr(equal_pos + 1);
+
+				// 数値を読み込む準備
+				istringstream value_Input = SetInputvalue(input);
+
+				// 数値を代入する
+				while (value_Input >> m_aInfo[nNum].aEventFrame[nEndEvent].nEnd)
+				{
+					nEndEvent++;
+				}
 			}
 
 			if (line.find("FRAME") != string::npos)

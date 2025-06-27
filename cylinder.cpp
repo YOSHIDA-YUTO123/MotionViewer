@@ -90,7 +90,7 @@ HRESULT CMeshCylinder::Init(void)
 	}
 
 	// テクスチャのIDの設定
-	CMesh::SetTextureID("data/TEXTURE/field.jpg");
+	CMesh::SetTextureID("data/TEXTURE/mountain000.png");
 
 	return S_OK;
 }

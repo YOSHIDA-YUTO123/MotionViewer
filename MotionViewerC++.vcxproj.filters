@@ -28,14 +28,8 @@
     <Filter Include="ソース ファイル\model">
       <UniqueIdentifier>{3ccf9c9d-3864-4804-8675-bbd798c0ad0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\3Dpolygon">
-      <UniqueIdentifier>{83ea24e8-cc65-4358-b4cd-85ebaa8759cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\system">
       <UniqueIdentifier>{0c970b82-1997-474f-977f-fc4acafbcf6b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\3Dpolygon">
-      <UniqueIdentifier>{bf887f98-0c08-4733-bee2-8f1e03e55780}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダー ファイル\model">
       <UniqueIdentifier>{0cdfe39a-e89f-4d68-8f67-ebc3aecc3a0f}</UniqueIdentifier>
@@ -54,6 +48,18 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\imgui">
       <UniqueIdentifier>{9f5fe16d-eb75-4061-b699-6cebf5c641fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\object3D">
+      <UniqueIdentifier>{2f15d08b-8859-44fc-bcbc-dd0035486847}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\billboard">
+      <UniqueIdentifier>{c82e67f6-97b2-48d2-ae94-88d562eb73a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\object3D">
+      <UniqueIdentifier>{c82bf242-1547-4956-b56e-da675d540428}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\billboard">
+      <UniqueIdentifier>{cf6962f0-e1f2-4270-adc2-c0b38be99d84}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -123,9 +129,6 @@
     <ClCompile Include="objectX.cpp">
       <Filter>ソース ファイル\base</Filter>
     </ClCompile>
-    <ClCompile Include="shadow.cpp">
-      <Filter>ソース ファイル\3Dpolygon</Filter>
-    </ClCompile>
     <ClCompile Include="imgui.cpp">
       <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
@@ -150,6 +153,15 @@
     <ClCompile Include="imguimaneger.cpp">
       <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="shadow.cpp">
+      <Filter>ソース ファイル\object3D</Filter>
+    </ClCompile>
+    <ClCompile Include="explosion.cpp">
+      <Filter>ソース ファイル\billboard</Filter>
+    </ClCompile>
+    <ClCompile Include="billboard.cpp">
+      <Filter>ソース ファイル\billboard</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h">
@@ -166,9 +178,6 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>ヘッダー ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="shadow.h">
-      <Filter>ヘッダー ファイル\3Dpolygon</Filter>
     </ClInclude>
     <ClInclude Include="model.h">
       <Filter>ヘッダー ファイル\model</Filter>
@@ -241,6 +250,15 @@
     </ClInclude>
     <ClInclude Include="json_v3_10_5.hpp">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="billboard.h">
+      <Filter>ヘッダー ファイル\billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="explosion.h">
+      <Filter>ヘッダー ファイル\billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="shadow.h">
+      <Filter>ヘッダー ファイル\object3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

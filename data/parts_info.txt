@@ -1,0 +1,79 @@
+#--------------------------------------------------------
+# キャラクター情報
+#--------------------------------------------------------
+CHARACTERSET
+	NUM_PARTS = 10		# パーツの総数
+	MOVE = 10.10		# 移動量
+	JUMP = 20.65		# ジャンプ量
+
+	PARTSSET
+		INDEX = 0					# 
+		PARENT = -1					# 親モデル()
+		POS = 0.00 15.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 1					# 
+		PARENT = 0					# 親モデル()
+		POS = 0.00 15.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 2					# 
+		PARENT = 0					# 親モデル()
+		POS = -7.50 12.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 3					# 
+		PARENT = 2					# 親モデル()
+		POS = -10.00 0.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 4					# 
+		PARENT = 0					# 親モデル()
+		POS = 7.50 12.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 5					# 
+		PARENT = 4					# 親モデル()
+		POS = 10.00 0.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 6					# 
+		PARENT = 0					# 親モデル()
+		POS = -4.00 0.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 7					# 
+		PARENT = 6					# 親モデル()
+		POS = 0.00 -10.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 8					# 
+		PARENT = 0					# 親モデル()
+		POS = 4.00 0.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+	PARTSSET
+		INDEX = 9					# 
+		PARENT = 8					# 親モデル()
+		POS = 0.00 -10.00 0.00		# 位置
+		ROT = 0.00 0.00 0.00		# 向き
+	END_PARTSSET
+
+END_CHARACTERSET

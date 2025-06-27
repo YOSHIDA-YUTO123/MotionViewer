@@ -59,8 +59,8 @@ CExplosion* CExplosion::Create(const D3DXVECTOR3 pos, const D3DXVECTOR3 size, co
 	pExplotion->m_col = col;
 	pExplotion->SetAnim(nAnimSpeed, U, V);
 	pExplotion->Init();
-	pExplotion->GetPosition()->Set(pos);
-	pExplotion->GetSize()->Set(size);
+	pExplotion->SetPosition(pos);
+	pExplotion->SetSize(size);
 	pExplotion->SetOffsetVtx(col, U, V);
 
 	return pExplotion;
@@ -156,8 +156,8 @@ CDustSmoke* CDustSmoke::Create(const D3DXVECTOR3 pos, const D3DXVECTOR3 size, co
 
 	pExplotion->m_col = col;
 	pExplotion->Init();
-	pExplotion->GetPosition()->Set(pos);
-	pExplotion->GetSize()->Set(size);
+	pExplotion->SetPosition(pos);
+	pExplotion->SetSize(size);
 	pExplotion->SetOffsetVtx(col, 1, 1);
 
 	return pExplotion;
@@ -193,8 +193,7 @@ void CDustSmoke::Uninit(void)
 //===================================================
 void CDustSmoke::Update(void)
 {
-	// ˆÊ’u‚ÌXVˆ—
-	GetPosition()->UpdatePosition(m_move);
+
 }
 
 //===================================================

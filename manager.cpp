@@ -108,17 +108,18 @@ HRESULT CManager::Init(HINSTANCE hInstance,HWND hWnd, BOOL bWindow)
 	// フィールドの設定
 	m_pMeshField = CMeshField::Create(VEC3_NULL ,64, 64, D3DXVECTOR2(5500.0f,5500.0f));
 
-	//// シリンダーの生成
-	//CMeshCylinder::Create(D3DXVECTOR3(500.0f,0.0f,0.0f), 10, 10,500.0f,500.0f);
-
 	// ドームの生成
 	CMeshDome::Create(VEC3_NULL,16,16,10000.0f,1500.0f);
 	CMeshDome::Create(VEC3_NULL, 16, 16, -10000.0f, -1500.0f);
+
+	// シリンダーの生成
+	CMeshCylinder::Create(VEC3_NULL, 10, 10, 1500.0f, 500.0f);
 
 	//CObject3D::Create(D3DXVECTOR3(0.0f,250.0f,0.0f), VEC3_NULL, D3DXVECTOR3(500.0f, 500.0f, 500.0f), "data/TEXTURE/field.png");
 
 	// プレイヤーの生成
 	m_pPlayer = CPlayer::Create();
+	m_pPlayer->Init();
 
 	//CObjectX::Create(VEC3_NULL, "data/MODEL/sandbug.x");
 

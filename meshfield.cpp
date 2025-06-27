@@ -105,7 +105,7 @@ HRESULT CMeshField::Init(void)
 	}
 
 	// テクスチャのIDの設定
-	CMesh::SetTextureID("data/TEXTURE/field.jpg");
+	CMesh::SetTextureID("data/TEXTURE/field.png");
 
 	//json config;
 
