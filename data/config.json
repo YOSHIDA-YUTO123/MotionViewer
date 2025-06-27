@@ -1,0 +1,21 @@
+{
+    "MOITONSET": {
+        "FRAME": [
+            30,
+            50
+        ],
+        "KEY": [
+            0,
+            1
+        ],
+        "LOOP": [
+            true
+        ],
+        "MOTIONTYPE": [
+            0
+        ],
+        "NUM_KEY": [
+            2
+        ]
+    }
+}
