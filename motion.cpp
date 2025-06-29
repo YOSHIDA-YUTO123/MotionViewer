@@ -359,7 +359,7 @@ void CMotion::FinishFirstBlend(void)
 		// もとに戻す
 		m_bFirst = false;
 
-		m_nKey = m_nKeyBlend;
+		m_nKey = 0;
 
 		// モーションをブレンドしたモーションにする
 		m_nType = m_nTypeBlend;
@@ -463,20 +463,11 @@ void CMotion::UpdateBlendMotion(CModel** pModel, int nIdx)
 	float fDiffBlendRY = pNextBlendKey->fRotY - pCurrentBlendKey->fRotY;
 	float fDiffBlendRZ = pNextBlendKey->fRotZ - pCurrentBlendKey->fRotZ;
 
-	//// 角度の正規化
-	//NormalizeRot(&fDiffBlendRX);
-	//NormalizeRot(&fDiffBlendRY);
-	//NormalizeRot(&fDiffBlendRZ);
 
 	// ブレンドモーションのフレームに応じた角度の設定
 	float fRotXBlend = pCurrentBlendKey->fRotX + fDiffBlendRX * fRateBlendMotion;
 	float fRotYBlend = pCurrentBlendKey->fRotY + fDiffBlendRY * fRateBlendMotion;
 	float fRotZBlend = pCurrentBlendKey->fRotZ + fDiffBlendRZ * fRateBlendMotion;
-
-	//// 角度の正規化
-	//NormalizeRot(&fRotXBlend);
-	//NormalizeRot(&fRotYBlend);
-	//NormalizeRot(&fRotZBlend);
 
 	//現在のモーションの位置の差分を求める
 	float fDiffPX = pNextKey->fPosX - pCurrentKey->fPosX;
@@ -713,6 +704,7 @@ bool CMotion::IsEndMotion(void)
 	// モーションが終了したら
 	if (m_bFinish == false &&
 		m_nKey >= m_nNumKey - 1 &&
+		m_bBlend == true&&
 		m_bLoopMotion == false &&
 		m_bFirst == false)
 	{
