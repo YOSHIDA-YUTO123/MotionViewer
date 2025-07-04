@@ -33,7 +33,7 @@ CLight* CManager::m_pLight = nullptr;					// カメラへのポインタ
 CModelManager* CManager::m_pModel = nullptr;			// モデルのクラスへのポインタ
 CPlayer* CManager::m_pPlayer = nullptr;					// プレイヤークラスへのポインタ
 bool CManager::m_bPause = false;						// ポーズ
-CMeshField* CManager::m_pMeshField = nullptr;
+CMeshField* CManager::m_pMeshField = nullptr;			// メッシュフィールドの取得
 
 //===================================================
 // コンストラクタ
@@ -115,7 +115,8 @@ HRESULT CManager::Init(HINSTANCE hInstance,HWND hWnd, BOOL bWindow)
 	// シリンダーの生成
 	CMeshCylinder::Create(VEC3_NULL, 10, 10, 1500.0f, 500.0f);
 
-	//CObject3D::Create(D3DXVECTOR3(0.0f,250.0f,0.0f), VEC3_NULL, D3DXVECTOR3(500.0f, 500.0f, 500.0f), "data/TEXTURE/field.png");
+	// CObject3D::Create(D3DXVECTOR3(0.0f,250.0f,0.0f), VEC3_NULL, D3DXVECTOR3(500.0f, 500.0f, 500.0f), "data/TEXTURE/field.png");
+	CObjectX::Create(D3DXVECTOR3(0.0f, 0.0f, 500.0f), "data/MODEL/sandbag.x");
 
 	// プレイヤーの生成
 	m_pPlayer = CPlayer::Create();

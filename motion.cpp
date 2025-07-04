@@ -57,7 +57,6 @@ CMotion::CMotion()
 	m_nSelectMotion = NULL;
 	m_nAllCount = NULL;
 	m_nAllFrame = NULL;
-	m_bLoad = false;
 	m_nIdxEvent = NULL;
 }
 
@@ -155,7 +154,7 @@ void CMotion::SaveDataTxt(const char *pFileName)
 		outFile << "+--------------------------------------------------------+" << endl;
 
 		outFile << "+--------------------------------------------------------+" << endl;
-		outFile << " モーションタイプ[]" << endl;
+		outFile << " モーションタイプ[ " << m_name[m_nSelectMotion] << " ]\n";
 		outFile << "+--------------------------------------------------------+" << endl;
 
 		outFile << "MOTIONSET\n";
@@ -592,12 +591,12 @@ void CMotion::Update(CModel** pModel,const int nNumModel,bool bView)
 	// モーションが終了したら
 	if (IsEndMotion())
 	{
-		m_nCounterMotionBlend = 0;
-		m_nKeyBlend = 0;
-		m_nCounterBlend = 0;
-		m_nFrameBlend = m_aInfo[m_nType].aKeyInfo[m_nNumKey - 1].nFrame;
-		m_bFinish = true;
-		m_nTypeBlend = NEUTRAL;
+		m_nCounterMotionBlend = 0;	// ブレンドモーションフレームのリセット
+		m_nKeyBlend = 0;			// ブレンドキーのリセット
+		m_nCounterBlend = 0;		// ブレンドフレームの初期化
+		m_nFrameBlend = m_aInfo[m_nType].aKeyInfo[m_nNumKey - 1].nFrame; // ブレンドフレームの設定
+		m_bFinish = true;			// モーションが終わった
+		m_nTypeBlend = NEUTRAL;		// ブレンド先をニュートラルに設定する
 	}
 
 	// モーションの出だしのブレンドが終了した
@@ -606,12 +605,13 @@ void CMotion::Update(CModel** pModel,const int nNumModel,bool bView)
 	// キーが最大かつブレンドのカウントが最大になった
 	if (IsFinishEndBlend() == true)
 	{
-		m_nAllCount = m_nCounterMotionBlend;
-		m_bFinish = false;			// もとに戻す
-		m_bBlend = false;				// もとに戻す
-		m_nType = NEUTRAL;				// モーションタイプをニュートラルにする
-		m_nCount = m_nCounterMotionBlend;
-		m_nCounterBlend = 0;
+		m_nAllCount = m_nCounterMotionBlend;	// 全体のフレームを代入
+		m_bFinish = false;						// もとに戻す
+		m_bBlend = false;						// もとに戻す
+		m_nType = NEUTRAL;						// モーションタイプをニュートラルにする
+		m_nCount = m_nCounterMotionBlend;		// モーションのカウンターをブレンド先に合わせる
+		m_nCounterBlend = 0;					// ブレンドフレームの初期化
+		m_nKey = m_nKeyBlend;					// キーをブレンド先のキーに合わせる
 	}
 
 	// カウントがフレームを超えたら
@@ -739,6 +739,11 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 	{
 		// 総数のひとつ前に戻す
 		m_nSelectKey = m_aInfo[m_nSelectMotion].nNumkey - 1;
+
+		if (m_nSelectKey < 0)
+		{
+			m_nSelectKey = 0;
+		}
 	}
 
 	ImGui::PushItemWidth(100); // 幅100ピクセルにする
@@ -758,6 +763,10 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 		Reset(ppModel, 0);
 		m_nSelectKey = 0;
 	}
+
+	ImGui::SameLine();
+
+	ImGui::Text("[ %s ]", m_name[m_nSelectMotion]);
 
 	// ビューモードじゃないなら
 	if (bViewMode == false)

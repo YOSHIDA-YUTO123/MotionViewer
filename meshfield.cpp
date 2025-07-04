@@ -107,21 +107,6 @@ HRESULT CMeshField::Init(void)
 	// テクスチャのIDの設定
 	CMesh::SetTextureID("data/TEXTURE/field.png");
 
-	//json config;
-
-	//config["Loop"] = false;
-	//config["NumKey"] = 5;
-
-	//std::ofstream file("data/config.json");
-
-	//file << config.dump(4); // インデント付きで保存
-	//
-	//std::fstream File("data/config.json");
-
-	//bool bLoop = config["Loop"];
-	//int nNumKey = config["NumKey"];
-
-	//File.close();
 	return S_OK;
 }
 
@@ -402,6 +387,22 @@ void CMeshField::UpdateNor(void)
 
 					D3DXVec3Cross(&Normal, &vec0, &vec1);
 				}
+				// 左下だったら
+				else if (nCntZ == nSegZ)
+				{
+					nIdx0 = (nSegX + 1) * nSegZ;
+					nIdx1 = (nSegX + 1) * (nSegZ - 1);
+					nIdx2 = ((nSegX + 1) * nSegZ) + 1;
+
+					vtx0 = GetVtxPos(nIdx0);
+					vtx1 = GetVtxPos(nIdx1);
+					vtx2 = GetVtxPos(nIdx2);
+
+					vec0 = vtx1 - vtx0;
+					vec1 = vtx2 - vtx0;
+
+					D3DXVec3Cross(&Normal, &vec0, &vec1);
+				}
 				// 左の辺(角以外)だったら
 				else if (nCnt == (nSegX + 1) * nCntZ)
 				{
@@ -445,22 +446,6 @@ void CMeshField::UpdateNor(void)
 
 				Normal = (Nor0 + Nor1) * 0.5f;
 			}
-			// 左下だったら
-			else if (nCntZ == nSegZ && nCntX == 0)
-			{
-				nIdx0 = (nSegX + 1) * nSegZ;
-				nIdx1 = (nSegX + 1) * (nSegZ - 1);
-				nIdx2 = ((nSegX + 1) * nSegZ) + 1;
-
-				vtx0 = GetVtxPos(nIdx0);
-				vtx1 = GetVtxPos(nIdx1);
-				vtx2 = GetVtxPos(nIdx2);
-
-				vec0 = vtx1 - vtx0;
-				vec1 = vtx2 - vtx0;
-
-				D3DXVec3Cross(&Normal, &vec0, &vec1);
-			}
 			// 右上だったら
 			else if (nCntX == nSegX && nCntZ == 0)
 			{
@@ -498,27 +483,6 @@ void CMeshField::UpdateNor(void)
 
 				Normal = (Nor0 + Nor1) * 0.5f;
 			}
-			// 右の辺(角以外)だったら
-			else if (nCntX == nSegX && nCnt == (nCntX * (nCntZ + 1)) + nCntZ)
-			{
-				nIdx0 = nCnt - (nSegX + 1);
-				nIdx1 = nCnt - 1;
-				nIdx2 = nCntX + (nSegX + 1);
-
-				vtx0 = GetVtxPos(nIdx0);
-				vtx1 = GetVtxPos(nIdx1);
-				vtx2 = GetVtxPos(nIdx2);
-				vtx3 = GetVtxPos(nCnt);
-
-				vec0 = vtx0 - vtx3;
-				vec1 = vtx1 - vtx3;
-				vec2 = vtx2 - vtx3;
-
-				D3DXVec3Cross(&Nor0, &vec1, &vec0);
-				D3DXVec3Cross(&Nor1, &vec2, &vec1);
-
-				Normal = (Nor0 + Nor1) * 0.5f;
-			}
 			// 右下だったら
 			else if (nCnt == ((nSegX + 1) * (nSegZ + 1)) - 1)
 			{
@@ -534,6 +498,27 @@ void CMeshField::UpdateNor(void)
 				vec1 = vtx2 - vtx0;
 
 				D3DXVec3Cross(&Normal, &vec1, &vec0);
+			}
+			// 右の辺(角以外)だったら
+			else if (nCntX == nSegX && nCnt == (nCntX * (nCntZ + 1)) + nCntZ)
+			{
+				nIdx0 = nCnt - (nSegX + 1);
+				nIdx1 = nCnt - 1;
+				nIdx2 = nCnt + (nSegX + 1);
+
+				vtx0 = GetVtxPos(nIdx0);
+				vtx1 = GetVtxPos(nIdx1);
+				vtx2 = GetVtxPos(nIdx2);
+				vtx3 = GetVtxPos(nCnt);
+
+				vec0 = vtx0 - vtx3;
+				vec1 = vtx1 - vtx3;
+				vec2 = vtx2 - vtx3;
+
+				D3DXVec3Cross(&Nor0, &vec1, &vec0);
+				D3DXVec3Cross(&Nor1, &vec2, &vec1);
+
+				Normal = (Nor0 + Nor1) * 0.5f;
 			}
 			// それ以外(端っこでも角でもない)
 			else
@@ -562,6 +547,7 @@ void CMeshField::UpdateNor(void)
 
 				Normal = (Nor0 + Nor1 + Nor2 + Nor3) * 0.25f;
 			}
+
 			D3DXVec3Normalize(&Normal, &Normal);
 
 			SetNormal(Normal, nCnt);

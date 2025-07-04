@@ -106,7 +106,6 @@ private:
 	void UpdateBlendMotion(CModel** pModel, int nIdx);
 	void FinishFirstBlend(void);
 
-	bool m_bLoad;
 	CMotionLoader* m_pLoader;		// ローダー
 	Info m_aInfo[MAX_MOTION];		// モーション情報へのポインタ
 	int m_nType;				// モーションの種類
@@ -132,6 +131,26 @@ private:
 	int m_nSelectKey;				// 現在選択中のキー
 	int m_nSelectMotion;			// 選択中のモーション
 	int m_nIdxEvent;				// イベントフレームのインデックス
+
+	// モーションの名前
+	const char* m_name[MAX_MOTION] =
+	{
+		"NEUTRAL",
+		"MOVE",
+		"ACTION",
+		"JUMP",
+		"LANDING",
+		"DASH",
+		"DAMAGE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+	};
 
 	int m_nAllFrame;				// 全体のフレーム
 	int m_nAllCount;				// 全体のフレームのカウンター

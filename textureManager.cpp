@@ -44,7 +44,7 @@ int CTextureManager::Register(const char* pFilename)
 	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
 
 	// インデックス
-	int nIdx = 0;
+	int nIdx = -1;
 
 	for (int nCnt = 0; nCnt < MAX_TEXTURE; nCnt++)
 	{
