@@ -162,6 +162,9 @@
     <ClCompile Include="billboard.cpp">
       <Filter>ソース ファイル\billboard</Filter>
     </ClCompile>
+    <ClCompile Include="LoadManager.cpp">
+      <Filter>ソース ファイル\manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h">
@@ -259,6 +262,9 @@
     </ClInclude>
     <ClInclude Include="shadow.h">
       <Filter>ヘッダー ファイル\object3D</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadManager.h">
+      <Filter>ヘッダー ファイル\manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

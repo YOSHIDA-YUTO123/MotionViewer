@@ -21,17 +21,18 @@
 #include <iomanip>
 #include "explosion.h"
 
-using namespace math; // 名前空間を使用する
-using namespace std;
 
 //***************************************************
 // マクロ定義
 //***************************************************
-#define PLAYER_JUMP_HEIGHT (25.0f)  // ジャンプ量
-#define MOVE_SPEED (10.5f)			// 移動速度
-#define SHADOW_SIZE (25.0f)		// 影の大きさ
-#define SHADOW_MAX_HEIGHT (500.0f)  // 影が見える最大の高さ
-#define SHADOW_A_LEVEL (0.9f)       // 影のアルファ値のオフセット
+constexpr float PLAYER_JUMP_HEIGHT = 25.0f;  // ジャンプ量
+constexpr float MOVE_SPEED = 10.5f;			// 移動速度
+constexpr float SHADOW_SIZE = 25.0f;		// 影の大きさ
+constexpr float SHADOW_MAX_HEIGHT = 500.0f;  // 影が見える最大の高さ
+constexpr float SHADOW_A_LEVEL = 0.9f;       // 影のアルファ値のオフセット
+
+using namespace std;	// 名前空間stdを使用
+using namespace math;	// 名前空間mathを使用
 
 //===================================================
 // コンストラクタ
@@ -45,7 +46,6 @@ CPlayer::CPlayer(int nPriority) : CObject(nPriority)
 	m_rotDest = VEC3_NULL;
 	m_fSpeed = NULL;
 	m_bJump = true;
-	memset(m_apModel, NULL, sizeof(m_apModel));
 	m_nNumModel = NULL;
 	m_pMotion = nullptr;
 	m_bDash = false;
@@ -76,7 +76,7 @@ HRESULT CPlayer::Init(void)
 	if (m_pMotion != nullptr)
 	{
 		m_pMotion->Init();
-		m_pMotion->Update(&m_apModel[0], m_nNumModel,false);
+		m_pMotion->Reset(&m_apModel[0], 0);
 	}
 
 	return S_OK;
@@ -87,7 +87,7 @@ HRESULT CPlayer::Init(void)
 //===================================================
 void CPlayer::Uninit(void)
 {
-	for (int nCnt = 0; nCnt < NUM_PARTS; nCnt++)
+	for (int nCnt = 0; nCnt < (int)m_apModel.size(); nCnt++)
 	{
 		// モデルの破棄
 		if (m_apModel[nCnt] != nullptr)
@@ -536,7 +536,6 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 			m_pMotion->Reset(&m_apModel[0],0);
 		}
 	}
-
 	ImGui::SameLine();
 
 	const char* cMode = m_bViewMode ? "ON" : "OFF";
@@ -738,7 +737,7 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 			}
 		}
 
-		char filePath[MAX_PATH] = { "data/key_info.txt" };  // 保存するファイルのパスを格納
+		char filePath[MAX_PATH] = { };  // 保存するファイルのパスを格納
 
 		if (ImGui::Button(u8"モーションのセーブ"))
 		{
@@ -780,11 +779,22 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 			}
 		}
 
-		//if (ImGui::Button("json"))
-		//{
-		//	m_pMotion->SaveDataJson(NULL);
-		//}
+		if (ImGui::Button(u8"テキストファイルの再読み込み"))
+		{
+			// メッセージボックスを出す
+			int nID = MessageBox(NULL, "再読み込みしますか?", "再読み込み", MB_YESNO | MB_ICONWARNING);
 
+			// YESが押されたら
+			if (nID == IDYES)
+			{
+				// ファイルのダイアログボックスの表示
+				if (ShowOpenFileDialog(filePath, MAX_PATH))
+				{
+					// リセット
+					Reset(filePath);
+				}
+			}
+		}
 
 		if (m_bViewMode == true)
 		{
@@ -907,7 +917,7 @@ void CPlayer::LoadSystemIni(void)
 				// モデルの名前を代入
 				const char* FILE_NAME = FileName.c_str();
 
-				m_pMotion = CMotion::Load(FILE_NAME, &m_apModel[0], &m_nNumModel, NUM_PARTS);
+				m_pMotion = CMotion::Load(FILE_NAME, m_apModel, &m_nNumModel);
 			}
 		}
 		file.close();
@@ -921,6 +931,57 @@ void CPlayer::SetPlayer(const float fSpeed, const float fJumpHeight)
 {
 	m_fSpeed = fSpeed;
 	m_fJumpHeight = fJumpHeight;
+}
+
+//===================================================
+// プレイヤーのリセット処理
+//===================================================
+void CPlayer::Reset(const char *pFileName)
+{
+	for (int nCnt = 0; nCnt < (int)m_apModel.size(); nCnt++)
+	{
+		// モデルの破棄
+		if (m_apModel[nCnt] != nullptr)
+		{
+			// 終了処理
+			m_apModel[nCnt]->Uninit();
+
+			delete m_apModel[nCnt];
+
+			m_apModel[nCnt] = nullptr;
+		}
+	}
+
+	// モーションの終了処理
+	m_pMotion->Uninit();
+
+	// モーションの破棄
+	if (m_pMotion != nullptr)
+	{
+		delete m_pMotion;
+
+		m_pMotion = nullptr;
+	}
+
+	// モデルの要素のクリア
+	m_apModel.clear();
+
+	// 最大モデル数をリセット
+	m_nNumModel = 0;
+
+	// モーションの再読み込み
+	m_pMotion = CMotion::Load(pFileName, m_apModel, &m_nNumModel);
+
+	// 読み込みできたら
+	if (m_pMotion->GetLoad() == true)
+	{
+		m_pMotion->Reset(&m_apModel[0], 0);
+	}
+	else
+	{
+		// メッセージボックスの表示
+		MessageBox(NULL, pFileName, "読み込みに失敗しました。", MB_OK | MB_ICONWARNING);
+	}
 }
 
 //===================================================

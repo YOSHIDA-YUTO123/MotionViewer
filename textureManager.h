@@ -16,11 +16,12 @@
 //**********************************************
 #include"main.h"
 #include "object.h"
+#include<vector>
 
 //**********************************************
 // マクロ定義
 //**********************************************
-#define MAX_TEXTURE (128) // テクスチャの最大数
+//#define MAX_TEXTURE (128) // テクスチャの最大数
 
 //**********************************************
 // テクスチャのマネージャークラスの定義
@@ -32,7 +33,6 @@ public:
 	~CTextureManager();
 
 	int Register(const char* pFilename);
-	int RegisterX(const char* pFilename);
 	LPDIRECT3DTEXTURE9 GetAdress(int nIdx);
 	HRESULT Load(void);
 	void UnLoad(void);
@@ -45,7 +45,7 @@ private:
 		char filepath[MAX_WORD];				 // ファイルパス
 	}; 
 
-	TextureInfo m_apTextureInfo[MAX_TEXTURE];	 // テクスチャの情報
+	std::vector<TextureInfo> m_apTextureInfo;	 // テクスチャの情報
 	static int m_nNumAll;						 // テクスチャの番号
 };
 

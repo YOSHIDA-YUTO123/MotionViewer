@@ -14,21 +14,21 @@ NUM_MODEL = 15
 #------------------------------------------------------------------------------
 # モデルファイル名
 #------------------------------------------------------------------------------
-MODEL_FILENAME = data/MODEL/Player/00_waist.x	# [0]腰
-MODEL_FILENAME = data/MODEL/Player/01_chest.x	# [1]胸
-MODEL_FILENAME = data/MODEL/Player/02_head.x	# [2]頭
-MODEL_FILENAME = data/MODEL/Player/03_armUR.x	# [3]右上腕
-MODEL_FILENAME = data/MODEL/Player/04_armFR.x	# [4]右前腕
-MODEL_FILENAME = data/MODEL/Player/05_handR.x	# [5]右手
-MODEL_FILENAME = data/MODEL/Player/06_armUL.x	# [6]左上腕
-MODEL_FILENAME = data/MODEL/Player/07_armFL.x	# [7]左前腕
-MODEL_FILENAME = data/MODEL/Player/08_handL.x	# [8]左手
-MODEL_FILENAME = data/MODEL/Player/09_legUR.x	# [9]右腿
-MODEL_FILENAME = data/MODEL/Player/10_legDR.x	# [10]右脛
-MODEL_FILENAME = data/MODEL/Player/11_footR.x	# [11]右足
-MODEL_FILENAME = data/MODEL/Player/12_legUL.x	# [12]左腿
-MODEL_FILENAME = data/MODEL/Player/13_legDL.x	# [13]左脛
-MODEL_FILENAME = data/MODEL/Player/14_footL.x	# [14]左足
+MODEL_FILENAME = data/MODEL/player/00_waist.x	# [0]腰
+MODEL_FILENAME = data/MODEL/player/01_chest.x	# [1]胸
+MODEL_FILENAME = data/MODEL/player/02_head.x	# [2]頭
+MODEL_FILENAME = data/MODEL/player/03_armUR.x	# [3]右上腕
+MODEL_FILENAME = data/MODEL/player/04_armFR.x	# [4]右前腕
+MODEL_FILENAME = data/MODEL/player/05_handR.x	# [5]右手
+MODEL_FILENAME = data/MODEL/player/06_armUL.x	# [6]左上腕
+MODEL_FILENAME = data/MODEL/player/07_armFL.x	# [7]左前腕
+MODEL_FILENAME = data/MODEL/player/08_handL.x	# [8]左手
+MODEL_FILENAME = data/MODEL/player/09_legUR.x	# [9]右腿
+MODEL_FILENAME = data/MODEL/player/10_legDR.x	# [10]右脛
+MODEL_FILENAME = data/MODEL/player/11_footR.x	# [11]右足
+MODEL_FILENAME = data/MODEL/player/12_legUL.x	# [12]左腿
+MODEL_FILENAME = data/MODEL/player/13_legDL.x	# [13]左脛
+MODEL_FILENAME = data/MODEL/player/14_footL.x	# [14]左足
 
 #--------------------------------------------------------
 # キャラクター情報

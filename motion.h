@@ -83,7 +83,7 @@ public:
 	~CMotion();
 
 	void Init(void);
-	static CMotion* Load(const char* pFileName, CModel** ppModel, int* OutNumModel, const int nMaxSize);
+	static CMotion* Load(const char* pFileName, std::vector<CModel*>& pModel, int* OutNumModel);
 	void Uninit(void);
 	void Update(CModel** pModel, const int nNumModel,bool bView);
 	void SetMotion(const int motiontype, bool bBlend, const int nBlendFrame);
@@ -106,31 +106,31 @@ private:
 	void UpdateBlendMotion(CModel** pModel, int nIdx);
 	void FinishFirstBlend(void);
 
-	CMotionLoader* m_pLoader;		// ローダー
-	Info m_aInfo[MAX_MOTION];		// モーション情報へのポインタ
+	CMotionLoader* m_pLoader;	// ローダー
+	Info m_aInfo[MAX_MOTION];	// モーション情報へのポインタ
 	int m_nType;				// モーションの種類
-	int m_nNumKey;					// キーの総数
-	int m_nKey;						// 現在のキーNo.
+	int m_nNumKey;				// キーの総数
+	int m_nKey;					// 現在のキーNo.
 	int m_nCount;				// モーションのカウンター
-	int m_nextKey;					// 次のキー
-	bool m_bLoopMotion;				// ループするかどうか
-
-	bool m_bBlend;			// ブレンドがあるかどうか
-	bool m_bLoopMotionBlend;		// ループするかどうか
-	bool m_bFinish;			// モーションが終わったかどうか
-	bool m_bFirst;			// モーションが始まったフラグ
+	int m_nextKey;				// 次のキー
+	bool m_bLoopMotion;			// ループするかどうか
+	
+	bool m_bBlend;				// ブレンドがあるかどうか
+	bool m_bLoopMotionBlend;	// ループするかどうか
+	bool m_bFinish;				// モーションが終わったかどうか
+	bool m_bFirst;				// モーションが始まったフラグ
 
 	int m_nTypeBlend;			// ブレンドの種類
-	int m_nFrameBlend;				// ブレンドのフレーム数
-	int m_nCounterBlend;			// ブレンドカウンター
-	int m_nNumKeyBlend;				// ブレンドモーションの最大のキー
-	int m_nKeyBlend;				// ブレンドモーションの現在のキー
-	int m_nNextKeyBlend;			// ブレンドモーションの次のキー
-	int m_nCounterMotionBlend;		// ブレンドのカウンター
+	int m_nFrameBlend;			// ブレンドのフレーム数
+	int m_nCounterBlend;		// ブレンドカウンター
+	int m_nNumKeyBlend;			// ブレンドモーションの最大のキー
+	int m_nKeyBlend;			// ブレンドモーションの現在のキー
+	int m_nNextKeyBlend;		// ブレンドモーションの次のキー
+	int m_nCounterMotionBlend;	// ブレンドのカウンター
 
-	int m_nSelectKey;				// 現在選択中のキー
-	int m_nSelectMotion;			// 選択中のモーション
-	int m_nIdxEvent;				// イベントフレームのインデックス
+	int m_nSelectKey;			// 現在選択中のキー
+	int m_nSelectMotion;		// 選択中のモーション
+	int m_nIdxEvent;			// イベントフレームのインデックス
 
 	// モーションの名前
 	const char* m_name[MAX_MOTION] =
@@ -185,10 +185,11 @@ private:
 class CLoderText : public CMotionLoader
 {
 public:
-	static CLoderText* LoadTextFile(const char* pFileName, CModel** ppModel, CMotion::Info* pInfo, int* OutNumModel, const int nMaxSize);
+	static CLoderText* ReLoad(const char* pFileName, std::vector<CModel*>& pModel, CMotion::Info* pInfo, int* OutNumModel);
+	static CLoderText* LoadTextFile(const char* pFileName, std::vector<CModel*>& pModel, CMotion::Info* pInfo, int* OutNumModel);
 private:
-	bool LoadModel(CModel** ppModel, const int nMaxSize, int nCnt, std::string input, std::string line);
-	bool LoadCharacterSet(CModel** ppModel, std::string line, std::string input);
+	bool LoadModel(std::vector<CModel*>& pModel, int nCnt, std::string input, std::string line);
+	bool LoadCharacterSet(std::vector<CModel*>& pModel, std::string line, std::string input);
 	void LoadMotionSet(CLoderText* pLoader, std::ifstream& File, std::string nowLine, const int nNumMotion);
 	std::istringstream SetInputvalue(std::string input);
 };

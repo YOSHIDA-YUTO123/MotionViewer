@@ -166,6 +166,7 @@
     <ClCompile Include="impact.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="light.cpp" />
+    <ClCompile Include="LoadManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="manager.cpp" />
     <ClCompile Include="math.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="json_v3_10_5.hpp" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="LoadManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="manager.h" />
     <ClInclude Include="math.h" />

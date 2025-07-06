@@ -101,7 +101,7 @@ void CMotion::Init(void)
 //===================================================
 // モーションのロード処理
 //===================================================
-CMotion* CMotion::Load(const char* pFileName, CModel** ppModel, int* OutNumModel, const int nMaxSize)
+CMotion* CMotion::Load(const char* pFileName, std::vector<CModel*>& pModel, int* OutNumModel)
 {
 	CMotion::Info Info;
 
@@ -109,7 +109,7 @@ CMotion* CMotion::Load(const char* pFileName, CModel** ppModel, int* OutNumModel
 
 	if (pMotion != nullptr)
 	{
-		pMotion->m_pLoader = CLoderText::LoadTextFile(pFileName, ppModel, &Info, OutNumModel, nMaxSize);
+		pMotion->m_pLoader = CLoderText::LoadTextFile(pFileName, pModel, &Info, OutNumModel);
 
 		// ロードが成功していたら
 		if (pMotion->m_pLoader != nullptr)
@@ -1018,7 +1018,7 @@ void CMotionLoader::GetInfo(CMotion::Info* pInfo)
 //===================================================
 // テキストファイルのロード処理
 //===================================================
-CLoderText* CLoderText::LoadTextFile(const char* pFileName, CModel** ppModel, CMotion::Info* pInfo, int* OutNumModel,const int nMaxSize)
+CLoderText* CLoderText::LoadTextFile(const char* pFileName, vector<CModel*>& pModel, CMotion::Info* pInfo, int* OutNumModel)
 {
 	// ファイルをロードする
 	ifstream File(pFileName);
@@ -1045,18 +1045,15 @@ CLoderText* CLoderText::LoadTextFile(const char* pFileName, CModel** ppModel, CM
 			input = line.substr(equal_pos + 1);
 
 			// モデルのロード処理
-			if (pLoader->LoadModel(ppModel, nMaxSize, nNumModel, input, line))
+			if (pLoader->LoadModel(pModel, nNumModel, input, line))
 			{
-				if (nNumModel <= nMaxSize - 1)
-				{
-					nNumModel++;
-				}
+				nNumModel++;
 			}
 
 			// パーツの設定が終わって無かったら
 			if (bCharacterSet == false)
 			{
-				bCharacterSet = pLoader->LoadCharacterSet(ppModel, line,input);
+				bCharacterSet = pLoader->LoadCharacterSet(pModel, line,input);
 			}
 
 			// モーションの設定の読み込み
@@ -1071,6 +1068,7 @@ CLoderText* CLoderText::LoadTextFile(const char* pFileName, CModel** ppModel, CM
 
 		// ファイルを閉じる
 		File.close();
+		File.clear();
 
 		// モデルの総数を渡す
 		*OutNumModel = nNumModel;
@@ -1092,8 +1090,20 @@ CLoderText* CLoderText::LoadTextFile(const char* pFileName, CModel** ppModel, CM
 //===================================================
 // モデルのロード処理
 //===================================================
-bool CLoderText::LoadModel(CModel** ppModel, const int nMaxSize, int nCnt, string input, string line)
+bool CLoderText::LoadModel(vector<CModel*>& pModel, int nCnt, string input, string line)
 {
+	int nNumParts = 0;
+
+	if (line.find("NUM_MODEL") != string::npos)
+	{
+		// 数値を読み込む準備
+		istringstream value_Input = SetInputvalue(input);
+
+		// 数値を代入する
+		value_Input >> nNumParts;
+
+		pModel.resize(nNumParts);
+	}
 	if (line.find("MODEL_FILENAME") != string::npos)
 	{
 		// 数値を読み込む準備
@@ -1108,18 +1118,10 @@ bool CLoderText::LoadModel(CModel** ppModel, const int nMaxSize, int nCnt, strin
 		// モデルの名前を代入
 		const char* MODEL_NAME = modelName.c_str();
 
-		// サイズ以上に読み込むとエラーが出るため制限
-		if (nCnt <= nMaxSize - 1)
-		{
-			// モデルの生成
-			ppModel[nCnt] = CModel::Create(MODEL_NAME);
+		// モデルの生成
+		pModel[nCnt] = CModel::Create(MODEL_NAME);
 
-			return true;
-		}
-		else
-		{
-			MessageBox(NULL, MODEL_NAME, "これ以上読み込めません", MB_OK);
-		}
+		return true;
 	}
 	return false;
 }
@@ -1127,7 +1129,7 @@ bool CLoderText::LoadModel(CModel** ppModel, const int nMaxSize, int nCnt, strin
 //===================================================
 // キャラクターのロード処理
 //===================================================
-bool CLoderText::LoadCharacterSet(CModel** ppModel, string line, string input)
+bool CLoderText::LoadCharacterSet(vector<CModel*>& pModel, string line, string input)
 {
 	// プレイヤーの取得
 	CPlayer* pPlayer = CManager::GetPlayer();
@@ -1189,16 +1191,16 @@ bool CLoderText::LoadCharacterSet(CModel** ppModel, string line, string input)
 		value_Input >> nParent;
 
 		// 親モデルの番号の取得
-		ppModel[nIdx]->SetParentID(nParent);
+		pModel[nIdx]->SetParentID(nParent);
 
 		if (nParent != -1)
 		{// 親が存在していたら
 			// 親のモデルの設定
-			ppModel[nIdx]->SetParent(ppModel[nParent]);
+			pModel[nIdx]->SetParent(pModel[nParent]);
 		}
 		else
 		{// 親が存在していなかったら
-			ppModel[nIdx]->SetParent(nullptr);
+			pModel[nIdx]->SetParent(nullptr);
 		}
 	}
 
@@ -1212,7 +1214,7 @@ bool CLoderText::LoadCharacterSet(CModel** ppModel, string line, string input)
 		value_Input >> offset.y;
 		value_Input >> offset.z;
 
-		ppModel[nIdx]->SetOffPos(offset);
+		pModel[nIdx]->SetOffPos(offset);
 	}
 
 	if (line.find("ROT") != string::npos)
@@ -1225,7 +1227,7 @@ bool CLoderText::LoadCharacterSet(CModel** ppModel, string line, string input)
 		value_Input >> offset.y;
 		value_Input >> offset.z;
 
-		ppModel[nIdx]->SetOffRot(offset);
+		pModel[nIdx]->SetOffRot(offset);
 	}
 
 	if (line.find("END_CHARACTERSET") != string::npos)

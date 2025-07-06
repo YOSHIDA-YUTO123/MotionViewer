@@ -77,7 +77,7 @@ HRESULT CModel::Init(const char* pModelName)
 	for (int nCnt = 0; nCnt < (int)dwNumMat; nCnt++)
 	{
 		// ファイル名を使用してテクスチャを読み込む
-		m_pTextureIdx[nCnt] = pTexture->RegisterX(pMat[nCnt].pTextureFilename);
+		m_pTextureIdx[nCnt] = pTexture->Register(pMat[nCnt].pTextureFilename);
 	}
 
 	return S_OK;

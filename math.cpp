@@ -204,7 +204,7 @@ bool math::ShowSaveFileDialog(char* filePath, size_t maxLength,int *outFilterInd
 //===================================================
 bool math::ShowOpenFileDialog(char* filePath, size_t max_length)
 {
-	OPENFILENAME ofn;    // ダイアログボックス構造体
+	OPENFILENAME ofn = {};    // ダイアログボックス構造体
 	ZeroMemory(&ofn, sizeof(ofn));
 
 	ofn.lStructSize = sizeof(ofn);
@@ -214,7 +214,7 @@ bool math::ShowOpenFileDialog(char* filePath, size_t max_length)
 	ofn.lpstrFilter = "テキストファイル\0*.txt\0すべてのファイル\0*.*\0";
 	ofn.lpstrFile[0] = '\0';   // 初期化
 	ofn.lpstrDefExt = "txt";
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 	// ダイアログボックスを表示し、選択されたファイルパスを取得
 	return GetOpenFileName(&ofn) == TRUE;

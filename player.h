@@ -16,11 +16,12 @@
 //***************************************************
 #include"main.h"
 #include"object.h"
+#include<vector>
 
 //***************************************************
 // マクロ定義
 //***************************************************
-#define NUM_PARTS (25) // モデルの最大数
+//#define NUM_PARTS (25) // モデルの最大数
 
 //***************************************************
 // 前方宣言
@@ -67,6 +68,7 @@ public:
 	void SaveOffset(const char* pFileName);
 	void LoadSystemIni(void);
 	void SetPlayer(const float fSpeed, const float fJumpHeight);
+	void Reset(const char* pFileName);
 
 	void SetPos(const D3DXVECTOR3 pos) { m_pos = pos; }
 	void SetRot(const D3DXVECTOR3 rot) { m_rot = rot; }
@@ -77,7 +79,7 @@ private:
 	void TransitionMotion(void);
 
 	CMotion *m_pMotion;				// モーションのクラスへのポインタ
-	CModel* m_apModel[NUM_PARTS];	// モデルクラスへのポインタ
+	std::vector<CModel*> m_apModel;	// モデルクラスへのポインタ
 	CShadow* m_pShadow;				// 影クラスへのポインタ
 
 	D3DXVECTOR3 m_pos;				// 位置
