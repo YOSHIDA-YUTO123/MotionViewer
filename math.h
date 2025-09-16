@@ -105,7 +105,7 @@ namespace math
 	D3DXQUATERNION CreateQuaternion(D3DXQUATERNION* pOut, D3DXVECTOR3 axis, float fAngle);
 	D3DXMATRIX SetMatrixRotationQuaternion(D3DXMATRIX* pOut, D3DXQUATERNION quaternion);
 	D3DXVECTOR3 MatrixToEulerXYZ(const D3DXMATRIX mtxWorld);
-	bool ShowSaveFileDialog(char* filePath, size_t maxLength, int* outFilterIndex);
+	bool ShowSaveFileDialog(char* filePath, size_t maxLength);
 	bool ShowOpenFileDialog(char* filePath, size_t max_length);
 }
 #endif

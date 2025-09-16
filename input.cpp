@@ -9,6 +9,7 @@
 // インクルードファイル
 //*************************************************
 #include "input.h"
+#include "object.h"
 
 //*************************************************
 // マクロ定義
@@ -624,6 +625,52 @@ void CInputMouse::Update(void)
 
 	m_CurrentState.lX = p.x;
 	m_CurrentState.lY = p.y;
+
+#if 0
+
+	RECT rect = {};
+
+	GetClientRect(FindWindowA(CLASS_NAME, WINDOW_NAME), &rect);
+
+	// カーソルがウィンドウに左端を超えたら
+	if (m_CurrentState.lX <= rect.left)
+	{
+		// マウスの位置を設定
+		int MousePos = rect.right - 50.0f;
+
+		// 現在の位置の取得
+		GetCursorPos(&p);
+
+		// 位置の設定
+		m_CurrentState.lX = MousePos;
+		m_PrevState = m_CurrentState;
+
+		// 位置の設定
+		p.x = MousePos;
+
+		// マウスの位置の設定
+		SetCursorPos(p.x, p.y);
+	}
+	// カーソルがウィンドウに右端を超えたら
+	else if (m_CurrentState.lX >= rect.right)
+	{
+		// マウスの位置を設定
+		int MousePos = rect.left + 100.0f;
+
+		// 現在の位置の取得
+		GetCursorPos(&p);
+
+		// 位置の設定
+		m_CurrentState.lX = MousePos;
+		m_PrevState = m_CurrentState;
+
+		// 位置の設定
+		p.x = MousePos;
+
+		// マウスの位置の設定
+		SetCursorPos(p.x, p.y);
+	}
+#endif // 0
 }
 //===============================================
 // マウスのプレス処理

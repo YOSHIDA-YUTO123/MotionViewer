@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -80,6 +80,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <OutDir>$(SolutionDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -152,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="billboard.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="toolbar.cpp" />
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="dome.cpp" />
     <ClCompile Include="explosion.cpp" />
@@ -186,13 +188,16 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="playerstate.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="shadow.cpp" />
+    <ClCompile Include="statebase.cpp" />
     <ClCompile Include="textureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="billboard.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="toolbar.h" />
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="dome.h" />
     <ClInclude Include="explosion.h" />
@@ -221,8 +226,10 @@
     <ClInclude Include="objectX.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="playerstate.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="shadow.h" />
+    <ClInclude Include="statebase.h" />
     <ClInclude Include="textureManager.h" />
   </ItemGroup>
   <ItemGroup>

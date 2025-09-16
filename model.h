@@ -22,7 +22,6 @@
 class CModel
 {
 public:
-
 	CModel();
 	~CModel();
 	static CModel* Create(const char* pModelName);
@@ -32,7 +31,7 @@ public:
 	void Uninit(void);
 	void Update(void);
 	void Draw(void);
-	void Draw(const float fAlv);
+	void Draw(const D3DXVECTOR4 Diffuse, const bool bDiffuseCange);
 	void DrawShadow(void);
 
 	D3DXVECTOR3 GetPosition(void) const { return m_pos; }

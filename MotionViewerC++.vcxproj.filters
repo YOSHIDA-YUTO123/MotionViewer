@@ -165,6 +165,15 @@
     <ClCompile Include="LoadManager.cpp">
       <Filter>ソース ファイル\manager</Filter>
     </ClCompile>
+    <ClCompile Include="statebase.cpp">
+      <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="playerstate.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="toolbar.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h">
@@ -265,6 +274,15 @@
     </ClInclude>
     <ClInclude Include="LoadManager.h">
       <Filter>ヘッダー ファイル\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="statebase.h">
+      <Filter>ヘッダー ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="playerstate.h">
+      <Filter>ヘッダー ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="toolbar.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

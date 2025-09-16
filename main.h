@@ -20,4 +20,5 @@
 //***************************************************
 class CRenderer;
 class CObject;
+
 #endif

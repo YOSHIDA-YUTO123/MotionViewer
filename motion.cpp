@@ -167,7 +167,7 @@ void CMotion::SaveDataTxt(const char *pFileName)
 		// イベントフレームがあるなら
 		if (nNumEvent > 0)
 		{
-			outFile << " \tNUM_EVENT = " << nNumEvent << "\t\t\t\t# イベントフレームの総数\n";
+			outFile << " \tNUM_FRAME = " << nNumEvent << "\t\t\t\t# イベントフレームの総数\n";
 
 			outFile << " \tSTART_FRAME = ";
 
@@ -358,7 +358,7 @@ void CMotion::FinishFirstBlend(void)
 		// もとに戻す
 		m_bFirst = false;
 
-		m_nKey = 0;
+		m_nKey = m_nKeyBlend;
 
 		// モーションをブレンドしたモーションにする
 		m_nType = m_nTypeBlend;
@@ -843,12 +843,13 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 			// イベントフレームの設定
 			ImGui::SliderInt(u8"開始フレームの設定", &pEvent->nStart, 1, nAllFrame);
 			ImGui::SliderInt(u8"終了フレームの設定", &pEvent->nEnd, pEvent->nStart, nAllFrame);
-
-			// モーション情報の表示
-			ImGui::Text(u8"KEY     [ %d / %d ]", m_nKey, m_aInfo[m_nType].nNumkey);
-			ImGui::Text(u8"FRAME     [ %d / %d ]", m_nCount, m_aInfo[m_nType].aKeyInfo[m_nKey].nFrame);
-			ImGui::Text(u8"ALLFRAME     [ %d / %d ]", m_nAllCount, m_nAllFrame);
 		}
+
+		// モーション情報の表示
+		ImGui::Text(u8"現在のモーション [ %s ] ( %d )", m_name[m_nType], m_nType);
+		ImGui::Text(u8"KEY     [ %d / %d ]", m_nKey, m_aInfo[m_nType].nNumkey);
+		ImGui::Text(u8"FRAME     [ %d / %d ]", m_nCount, m_aInfo[m_nType].aKeyInfo[m_nKey].nFrame);
+		ImGui::Text(u8"ALLFRAME     [ %d / %d ]", m_nAllCount, m_nAllFrame);
 
 		ImGui::TreePop();
 	}
@@ -895,7 +896,7 @@ void CMotion::MotionSetElement(CImGuiManager* pImGui, CModel** ppModel, bool bVi
 		{
 			// ビューの開始
 			pPlayer->StartMotionView();
-			SetMotion(m_nSelectMotion, true, 5);
+			SetMotion(m_nSelectMotion, true, 10);
 		}
 	}
 

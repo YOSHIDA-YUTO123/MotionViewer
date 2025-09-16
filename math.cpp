@@ -164,7 +164,7 @@ D3DXVECTOR3 math::MatrixToEulerXYZ(const D3DXMATRIX mtxWorld)
 //===================================================
 // ファイル保存をダイアログ表示する
 //===================================================
-bool math::ShowSaveFileDialog(char* filePath, size_t maxLength,int *outFilterIndex)
+bool math::ShowSaveFileDialog(char* filePath, size_t maxLength)
 {
 	OPENFILENAME ofn;	// ダイアログボックス構造体
 
@@ -179,7 +179,6 @@ bool math::ShowSaveFileDialog(char* filePath, size_t maxLength,int *outFilterInd
 	ofn.nMaxFile = (DWORD)maxLength;
 	ofn.lpstrFilter =
 		"テキストファイル (*.txt)\0*.txt\0"
-		"JSONファイル (*.json)\0*.json\0"
 		"すべてのファイル (*.*)\0*.*\0";
 
 	ofn.nFilterIndex = 1;
@@ -189,11 +188,6 @@ bool math::ShowSaveFileDialog(char* filePath, size_t maxLength,int *outFilterInd
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;
 
 	bool result = (GetSaveFileName(&ofn) == TRUE);
-
-	if (result && outFilterIndex)
-	{
-		*outFilterIndex = ofn.nFilterIndex;
-	}
 
 	// ダイアログボックスを表示し、保存先ファイルパスを取得
 	return result;

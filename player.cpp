@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <iomanip>
 #include "explosion.h"
-
+#include"playerstate.h"
 
 //***************************************************
 // マクロ定義
@@ -39,6 +39,8 @@ using namespace math;	// 名前空間mathを使用
 //===================================================
 CPlayer::CPlayer(int nPriority) : CObject(nPriority)
 {
+	m_Diffuse = VEC4_NULL;
+	m_bDiffuseChange = false;
 	m_pos = VEC3_NULL;
 	m_rot = VEC3_NULL;
 	D3DXMatrixIdentity(&m_mtxWorld);
@@ -54,6 +56,7 @@ CPlayer::CPlayer(int nPriority) : CObject(nPriority)
 	m_fJumpHeight = NULL;
 	m_nSmockModel = NULL;
 	m_bViewMode = false;
+	m_pMachine = nullptr;
 }
 
 //===================================================
@@ -70,6 +73,9 @@ HRESULT CPlayer::Init(void)
 {
 	// 初期情報のロード
 	LoadSystemIni();
+
+	// 状態マシーンの生成
+	m_pMachine = make_unique<CStateMachine>();
 
 	m_pShadow = CShadow::Create(VEC3_NULL, 50.0f, 50.0f, WHITE);
 
@@ -101,13 +107,12 @@ void CPlayer::Uninit(void)
 		}
 	}
 
-	// モーションの終了処理
-	m_pMotion->Uninit();
-
+	m_pMachine = nullptr;
 	// モーションの破棄
 	if (m_pMotion != nullptr)
 	{
-		delete m_pMotion;
+		// モーションの終了処理
+		m_pMotion->Uninit();
 
 		m_pMotion = nullptr;
 	}
@@ -149,22 +154,21 @@ void CPlayer::Update(void)
 			// パッドの移動処理
 			CPlayer::MoveJoypad(pJoypad);
 		}
-		else
+		else if(CPlayer::MoveKeyboard(pKeyboard))
 		{
-			// キーボードの移動処理
-			if (CPlayer::MoveKeyboard(pKeyboard))
-			{
-				// ダッシュモーションか歩きモーションかを判定
-				int isDashMotion = (m_bDash ? MOTIONTYPE_DASH : MOTIONTYPE_MOVE);
+			// ダッシュモーションか歩きモーションかを判定
+			int isDashMotion = (m_bDash ? MOTIONTYPE_DASH : MOTIONTYPE_MOVE);
 
-				// ジャンプかjumpじゃないかを判定
-				int motiontype = m_bJump ? isDashMotion : MOTIONTYPE_JUMP;
+			// ジャンプかjumpじゃないかを判定
+			int motiontype = m_bJump ? isDashMotion : MOTIONTYPE_JUMP;
 
-				// モーションの設定
-				m_pMotion->SetMotion(motiontype, true, 5);
+			// モーションの設定
+			m_pMotion->SetMotion(motiontype, true, 10);
 
-				m_bMotionView = false;
-			}
+			m_bMotionView = false;
+
+			// プレイヤーの状態を移動にする
+			ChangeState(make_shared<CPlayerMove>());
 		}
 
 		if (pKeyboard->GetPress(DIK_LSHIFT) || pJoypad->GetPress(pJoypad->JOYKEY_RIGHT_SHOULDER))
@@ -193,7 +197,7 @@ void CPlayer::Update(void)
 
 		if (m_bJump == false && m_bMotionView == false)
 		{
-			m_pMotion->SetMotion(MOTIONTYPE_LANDING, true, 5);
+			m_pMotion->SetMotion(MOTIONTYPE_LANDING, true, 10);
 			CMeshCircle::Create(m_pos, 18, 1, 10.0f, 80.0f, 10.0f, 60, D3DXCOLOR(1.0f, 1.0f, 0.5f, 1.0f));
 			m_bJump = true;
 		}
@@ -227,7 +231,7 @@ void CPlayer::Update(void)
 	// ジャンプできるなら
 	if ((pKeyboard->GetPress(DIK_SPACE) == true || pJoypad->GetPress(pJoypad->JOYKEY_A) == true) && m_bJump == true)
 	{
-		m_pMotion->SetMotion(MOTIONTYPE_JUMP, true, 5);
+		m_pMotion->SetMotion(MOTIONTYPE_JUMP, true, 10);
 
 		// 移動量を上方向に設定
 		m_move.y = m_fJumpHeight;
@@ -236,16 +240,18 @@ void CPlayer::Update(void)
 
 	if (pKeyboard->GetTrigger(DIK_RETURN))
 	{
-		m_pMotion->SetMotion(MOTIONTYPE_ACTION, true,5);
+		m_pMotion->SetMotion(MOTIONTYPE_ACTION, true, 10);
 	}
-
-	// プレイヤーのモーションの遷移
-	TransitionMotion();
 
 	if (m_pMotion != nullptr && bViewMode == true)
 	{
 		// モーションの更新処理
 		m_pMotion->Update(&m_apModel[0], m_nNumModel,m_bMotionView);
+	}
+
+	if (m_pMachine != nullptr)
+	{
+		m_pMachine->Update();
 	}
 
 	// 向きの差分
@@ -301,7 +307,7 @@ void CPlayer::Draw(void)
 			if (m_nModelIndex == nCnt)
 			{
 				// 描画処理
-				m_apModel[nCnt]->Draw(0.5f);
+				m_apModel[nCnt]->Draw(m_Diffuse,m_bDiffuseChange);
 			}
 			else
 			{
@@ -422,6 +428,9 @@ bool CPlayer::MoveKeyboard(CInputKeyboard* pKeyboard)
 		if ((motiontype == MOTIONTYPE_MOVE || motiontype == MOTIONTYPE_DASH) && m_bMotionView == false)
 		{
 			m_pMotion->SetMotion(MOTIONTYPE_NEUTRAL, true, 15);
+
+			// プレイヤーの状態を移動にする
+			ChangeState(make_shared<CPlayerNeutral>());
 		}
 	}
 
@@ -505,7 +514,7 @@ void CPlayer::MoveJoypad(CInputJoypad* pJoypad)
 bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 {
 	// 位置,大きさの設定
-	pImGui->SetPosition(ImVec2(0.0f, 0.0f));
+	pImGui->SetPosition(ImVec2(0.0f, 24.0f));
 	pImGui->SetSize(ImVec2(400.0f, 500.0f));
 
 	// 描画開始
@@ -580,6 +589,17 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 
 		ImGui::DragFloat(u8"プレイヤーのジャンプ量", &m_fJumpHeight, 0.1f, 0.5f, 100.0f);
 
+		if (ImGui::Button(u8"ジャンプする"))
+		{
+			m_move.y = m_fJumpHeight;
+		}
+
+		if (ImGui::Button(u8"後ろに向く"))
+		{
+			// 後ろに向く
+			m_rotDest.y = m_rot.y + D3DX_PI;
+		}
+
 		ImGui::PopItemWidth();
 
 	}
@@ -653,6 +673,16 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 			ImGui::SetTooltip(u8"Ctrlを押しながらクリックで入力可能");
 		}
 
+		// モデルの色の変更
+		ImGui::Checkbox(u8"モデルの色の変更", &m_bDiffuseChange);
+		
+		if (m_bDiffuseChange)
+		{
+			if (ImGui::ColorEdit4(u8"色の変更", m_Diffuse))
+			{
+
+			}
+		}
 		// オフセットの設定
 		if (ImGui::TreeNode(u8"オフセット設定"))
 		{
@@ -741,59 +771,18 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 
 		if (ImGui::Button(u8"モーションのセーブ"))
 		{
-			int fiter = 0;
-			// ファイル保存ダイアログを表示
-			if (ShowSaveFileDialog(filePath, MAX_PATH,&fiter))
-			{
-				switch (fiter)
-				{
-				case 1:
-					// モーションのデータの書き出し
-					m_pMotion->SaveDataTxt(filePath);
-					break;
-				case 2:
-					break;
-				default:
-					break;
-				}
-			}
+			// モーションのセーブ
+			SaveMotion();
 		}
 
 		if (ImGui::Button(u8"オフセットのセーブ"))
 		{
-			int fiter = 0;
-			// ファイル保存ダイアログを表示
-			if (ShowSaveFileDialog(filePath, MAX_PATH, &fiter))
-			{
-				switch (fiter)
-				{
-				case 1:
-					// モーションのデータの書き出し
-					SaveOffset(filePath);
-					break;
-				case 2:
-					break;
-				default:
-					break;
-				}
-			}
+			SaveOffSet();
 		}
 
 		if (ImGui::Button(u8"テキストファイルの再読み込み"))
 		{
-			// メッセージボックスを出す
-			int nID = MessageBox(NULL, "再読み込みしますか?", "再読み込み", MB_YESNO | MB_ICONWARNING);
-
-			// YESが押されたら
-			if (nID == IDYES)
-			{
-				// ファイルのダイアログボックスの表示
-				if (ShowOpenFileDialog(filePath, MAX_PATH))
-				{
-					// リセット
-					Reset(filePath);
-				}
-			}
+			ReLoad();
 		}
 
 		if (m_bViewMode == true)
@@ -917,7 +906,9 @@ void CPlayer::LoadSystemIni(void)
 				// モデルの名前を代入
 				const char* FILE_NAME = FileName.c_str();
 
-				m_pMotion = CMotion::Load(FILE_NAME, m_apModel, &m_nNumModel);
+				CMotion *pMotion = CMotion::Load(FILE_NAME, m_apModel, &m_nNumModel);
+
+				m_pMotion.reset(pMotion);
 			}
 		}
 		file.close();
@@ -952,14 +943,12 @@ void CPlayer::Reset(const char *pFileName)
 		}
 	}
 
-	// モーションの終了処理
-	m_pMotion->Uninit();
-
 	// モーションの破棄
 	if (m_pMotion != nullptr)
 	{
-		delete m_pMotion;
-
+		// モーションの終了処理
+		m_pMotion->Uninit();
+		m_pMotion.reset();
 		m_pMotion = nullptr;
 	}
 
@@ -970,7 +959,9 @@ void CPlayer::Reset(const char *pFileName)
 	m_nNumModel = 0;
 
 	// モーションの再読み込み
-	m_pMotion = CMotion::Load(pFileName, m_apModel, &m_nNumModel);
+	CMotion* pMotion = CMotion::Load(pFileName, m_apModel, &m_nNumModel);
+
+	m_pMotion.reset(pMotion);
 
 	// 読み込みできたら
 	if (m_pMotion->GetLoad() == true)
@@ -985,27 +976,16 @@ void CPlayer::Reset(const char *pFileName)
 }
 
 //===================================================
-// プレイヤーのモーションの遷移
+// 状態の変更
 //===================================================
-void CPlayer::TransitionMotion(void)
+void CPlayer::ChangeState(std::shared_ptr<CPlayerState> pNewState)
 {
-	// モーションの種類
-	MOTIONTYPE motiontype = (MOTIONTYPE)m_pMotion->GetBlendMotionType();
+	// オーナの設定
+	pNewState->SetOwner(this);
 
-	// モーションの遷移
-	switch (motiontype)
-	{
-	case MOTIONTYPE_NEUTRAL:
-		break;
-	case MOTIONTYPE_MOVE:
-		break;
-	case MOTIONTYPE_ACTION:
-		break;
-	default:
-		break;
-	}
+	// 状態の変更
+	m_pMachine->Change(pNewState);
 }
-
 
 //===================================================
 // 生成処理
@@ -1042,4 +1022,49 @@ CPlayer* CPlayer::Create(const D3DXVECTOR3 pos, const D3DXVECTOR3 rot)
 	pPlayer->m_rot = rot;
 
 	return pPlayer;
+}
+
+//===================================================
+// 再ロード処理
+//===================================================
+void CPlayer::ReLoad(void)
+{
+	char filePath[MAX_WORD] = {};
+
+	// ファイルのダイアログボックスの表示
+	if (ShowOpenFileDialog(filePath, MAX_PATH))
+	{
+		// 再設定
+		Reset(filePath);
+	}
+}
+
+//===================================================
+// モーションのセーブ
+//===================================================
+void CPlayer::SaveMotion(void)
+{
+	char filePath[MAX_WORD] = {};
+
+	// ファイル保存ダイアログを表示
+	if (ShowSaveFileDialog(filePath, MAX_PATH))
+	{
+		// モーションのデータの書き出し
+		m_pMotion->SaveDataTxt(filePath);
+	}
+}
+
+//===================================================
+// オフセットのセーブ
+//===================================================
+void CPlayer::SaveOffSet(void)
+{
+	char filePath[MAX_WORD] = {};
+
+	// ファイル保存ダイアログを表示
+	if (ShowSaveFileDialog(filePath, MAX_PATH))
+	{
+		// モーションのデータの書き出し
+		SaveOffset(filePath);
+	}
 }

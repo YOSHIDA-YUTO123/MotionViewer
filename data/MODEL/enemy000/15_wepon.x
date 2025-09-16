@@ -481,7 +481,7 @@ Mesh {
    0.000000;0.000000;0.000000;;
    0.000000;0.000000;0.000000;;
    TextureFilename {
-    "C:\\Users\\student\\Desktop\\wepontexture000.jpg";
+    "data/TEXTURE/wepontexture000.jpg";
    }
   }
  }

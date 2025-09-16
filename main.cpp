@@ -13,6 +13,7 @@
 #include<crtdbg.h>
 #include "manager.h"
 #include"renderer.h"
+#include "toolbar.h"
 
 //**************************************************
 // プロトタイプ宣言
@@ -24,11 +25,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 //==================================================
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-//#ifdef _DEBUG
+#ifdef _DEBUG
 
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF); //メモリーリーク検知用フラグ
 
-//#endif // _DEBUG
+#endif // _DEBUG
 
 	DWORD dwCurrentTime;					// 現在時刻
 	DWORD dwExecLastTime = timeGetTime();	// 最後に処理した時刻
@@ -40,6 +41,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, _
 	dwExecLastTime = timeGetTime();	// 現在時刻保存
 
 	RECT rect = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
+
+
+	InitCommonControls();
 
 	WNDCLASSEX wcex =
 	{
@@ -71,7 +75,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, _
 	hWnd = CreateWindowEx(0,		// 拡張ウィンドウスタイル
 		CLASS_NAME,					// ウインドウクラスの名前
 		WINDOW_NAME,				// ウインドウの名前
-		WS_OVERLAPPEDWINDOW,		// ウインドウのスタイル
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,		// ウインドウのスタイル
 		CW_USEDEFAULT,				// ウインドウ左上X座標
 		CW_USEDEFAULT,				// ウインドウ左上Y座標
 		(rect.right - rect.left),	// ウインドウ左上x座標幅
@@ -176,17 +180,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, _
 		pManager = nullptr;
 	}
 
-#ifdef _DEBUG
-
-	// メモリーリーク検知
-	if (_CrtDumpMemoryLeaks())
-	{
-		MessageBox(NULL, "メモリリークが検出されました", "エラー", MB_OK | MB_ICONERROR);
-		exit(1);
-	}
-
-#endif
-
 	// ウインドウクラスの登録を解除
 	UnregisterClass(CLASS_NAME, wcex.hInstance);
 
@@ -203,6 +196,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //==================================================
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	//HWND hStaticCtrl = {};
 	const RECT rect = { 0,0, SCREEN_WIDTH,SCREEN_HEIGHT }; // ウインドウの領域
 
 	// IMGUIのクリック判定
@@ -215,6 +209,25 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_SIZE:
 	{
+		HWND hToolbar = GetDlgItem(hWnd, CToolbar::TOOLBAR_ID); // ツールバーのIDを指定
+
+		if (hToolbar)
+		{
+			SendMessage(hToolbar, TB_AUTOSIZE, 0, 0);
+
+			// ツールバーの高さを取得
+			RECT rcToolbar;
+			GetWindowRect(hToolbar, &rcToolbar);
+			int toolbarHeight = rcToolbar.bottom - rcToolbar.top;
+
+			// クライアント領域サイズを取得
+			RECT rcClient;
+			GetClientRect(hWnd, &rcClient);
+
+			// ツールバーの幅を親ウィンドウのクライアント幅に合わせて移動・サイズ変更
+			MoveWindow(hToolbar, 0, 0, rcClient.right, toolbarHeight, TRUE);
+		}
+
 		if (wParam == SIZE_MINIMIZED)
 			return 0;
 
@@ -232,11 +245,91 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 		break;
-	case WM_DESTROY: // ウインドウの破棄メッセージ
-		// WM_QUITへメッセージを送る
-		PostQuitMessage(0);
+	case WM_CREATE:
+		CToolbar::CreateToolbar(hWnd,((LPCREATESTRUCT)lParam)->hInstance);
+		break;
+	case WM_NOTIFY:
+	{
+		LPNMHDR pnmh = (LPNMHDR)lParam;
+
+		if (pnmh->idFrom == CToolbar::TOOLBAR_ID && pnmh->code == TBN_DROPDOWN)
+		{
+			LPNMTOOLBAR pnmtb = (LPNMTOOLBAR)lParam;
+
+			RECT rc;
+			POINT pt;
+			SendMessage(pnmh->hwndFrom, TB_GETRECT, pnmtb->iItem, (LPARAM)&rc);
+			MapWindowPoints(pnmh->hwndFrom, HWND_DESKTOP, (POINT*)&rc, 2);
+			pt.x = rc.left;
+			pt.y = rc.bottom;
+
+			HMENU hMenu = CreatePopupMenu();
+
+			switch (pnmtb->iItem)
+			{
+			case 100:
+				AppendMenu(hMenu, MF_STRING, 200, "再読み込み");
+				AppendMenu(hMenu, MF_STRING, 201, "モーションのセーブ");
+				AppendMenu(hMenu, MF_STRING, 202, "オフセットのセーブ");
+				break;
+			default:
+				break;
+			}
+
+			TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN, pt.x, pt.y, 0, hWnd, NULL);
+
+			// メニューの破棄
+			DestroyMenu(hMenu);
+		}
+	}
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case 200:
+		{
+			// プレイヤーの取得
+			CPlayer* pPlayer = CManager::GetPlayer();
+
+			if (pPlayer != nullptr)
+			{
+				// 再読み込み
+				pPlayer->ReLoad();
+			}
+		}
+			break;
+		case 201:
+		{
+			// プレイヤーの取得
+			CPlayer* pPlayer = CManager::GetPlayer();
+
+			if (pPlayer != nullptr)
+			{
+				// 再読み込み
+				pPlayer->SaveMotion();
+			}
+		}
+		break;
+		case 202:
+		{
+			// プレイヤーの取得
+			CPlayer* pPlayer = CManager::GetPlayer();
+
+			if (pPlayer != nullptr)
+			{
+				// 再読み込み
+				pPlayer->SaveOffSet();
+			}
+		}
 		break;
 
+		default:
+			break;
+		}
+		break;
+	case WM_DESTROY: // ウインドウの破棄メッセージ
+		PostQuitMessage(0);
+		break;
 	case WM_KEYDOWN: // キー押下のメッセージ
 		switch (wParam)
 		{
@@ -255,5 +348,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 	}
+
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);    // 既定の処理を返す
 }

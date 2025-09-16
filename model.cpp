@@ -200,7 +200,7 @@ void CModel::Draw(void)
 //===================================================
 // 描画処理
 //===================================================
-void CModel::Draw(const float fAlv)
+void CModel::Draw(const D3DXVECTOR4 Diffuse,const bool bDiffuseCange)
 {
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
@@ -272,8 +272,20 @@ void CModel::Draw(const float fAlv)
 	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
 	{
 		D3DXMATERIAL Mat = pMat[nCntMat];
-
-		Mat.MatD3D.Diffuse.a = fAlv;
+		
+		if (bDiffuseCange)
+		{
+			// 色の変更
+			Mat.MatD3D.Diffuse.r = Diffuse.x;
+			Mat.MatD3D.Diffuse.g = Diffuse.y;
+			Mat.MatD3D.Diffuse.b = Diffuse.z;
+			Mat.MatD3D.Diffuse.a = Diffuse.w;
+		}
+		else
+		{
+			// 透明度を下げる
+			Mat.MatD3D.Diffuse.a = 0.5f;
+		}
 
 		//マテリアルの設定
 		pDevice->SetMaterial(&Mat.MatD3D);

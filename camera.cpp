@@ -207,10 +207,26 @@ void CCamera::MouseView(void)
 
 	D3DXVECTOR2 fAngle = Move - MoveOld;
 
-
 	CCamera::PadView();
 
-	if (pMouse->OnMousePress(1))
+	// 同時押し
+	if (pMouse->OnMousePress(0) && pMouse->OnMousePress(1))
+	{
+		D3DXVECTOR2 dir = fAngle;
+
+		//D3DXVec2Normalize(&dir, &dir);
+
+		// プレイヤーの移動量
+		float moveX = dir.x * cosf(m_rot.y) + dir.y * sinf(m_rot.y);
+		float moveZ = dir.x * sinf(m_rot.y) - dir.y * cosf(m_rot.y);
+
+		m_posV.x += moveX;
+		m_posV.z += moveZ;
+		m_posR.x += moveX;
+		m_posR.z += moveZ;
+
+	}
+	else if (pMouse->OnMousePress(1))
 	{
 		//回転量を更新
 		m_rot.y += fAngle.x * 0.01f;

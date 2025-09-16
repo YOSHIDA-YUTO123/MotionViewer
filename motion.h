@@ -28,7 +28,7 @@
 //***************************************************
 #define MAX_PARTS (32)  // パーツの最大数
 #define MAX_KEY (32)    // キーの最大数
-#define MAX_MOTION (15) // モーションの総数
+#define MAX_MOTION (25) // モーションの総数
 #define MAX_EVENT (10)  // イベントフレームの総数
 
 //***************************************************
@@ -140,8 +140,18 @@ private:
 		"ACTION",
 		"JUMP",
 		"LANDING",
-		"DASH",
-		"DAMAGE",
+		"BLOW",
+		"DOWNNEUTRAL",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
+		"FREE",
 		"FREE",
 		"FREE",
 		"FREE",
