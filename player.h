@@ -80,6 +80,7 @@ public:
 	D3DXVECTOR3 GetRot(void) const { return m_rot; }
 
 private:
+	void CollisionMouse(void);
 
 	std::unique_ptr<CStateMachine> m_pMachine;
 	std::unique_ptr<CMotion> m_pMotion;				// モーションのクラスへのポインタ

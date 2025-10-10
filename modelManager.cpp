@@ -63,10 +63,7 @@ int CModelManager::Register(const char* pFilename)
 	if (nIdx == -1)
 	{
 		// モデルの情報
-		ModelInfo info;
-
-		// 値をクリアしておく
-		memset(&info, NULL, sizeof(info));
+		ModelInfo info = {};
 
 		////Xファイルの読み込み
 		if (FAILED(D3DXLoadMeshFromX(pFilename,
@@ -87,6 +84,12 @@ int CModelManager::Register(const char* pFilename)
 		// 文字列をコピーする
 		strncpy(info.filepath, pFilename, sizeof(info.filepath));
 
+		// 大きさの設定
+		SetSize(&info);
+
+		// マテリアルの設定
+		SetMaterial(&info);
+
 		// 要素の設定
 		m_apModelInfo.push_back(info);
 
@@ -100,127 +103,26 @@ int CModelManager::Register(const char* pFilename)
 }
 
 //==============================================
-// メッシュの取得
+// モデルの情報
 //==============================================
-LPD3DXMESH CModelManager::GetMesh(int nIdx)
+CModelManager::ModelInfo CModelManager::GetModelInfo(const int nIdx)
 {
 	// モデルの数
 	int nNumModel = static_cast<int>(m_apModelInfo.size());
 
-	if (nIdx < 0 || nIdx >= nNumModel)
+	if (m_apModelInfo.empty())
 	{
-		return nullptr;
+		MessageBox(NULL, "モデルが読み込まれていません", "モデルを登録してください", MB_OK);
+		return ModelInfo();
 	}
-
-	return m_apModelInfo[nIdx].pMesh;
-}
-
-//==============================================
-// バッファの取得
-//==============================================
-LPD3DXBUFFER CModelManager::GetBuffMat(int nIdx)
-{
-	// モデルの数
-	int nNumModel = static_cast<int>(m_apModelInfo.size());
 
 	if (nIdx < 0 || nIdx >= nNumModel)
 	{
-		return nullptr;
+		assert(false && "インデックスオーバーModelInfo");
+		return ModelInfo();
 	}
 
-	return m_apModelInfo[nIdx].pBuffMat;
-}
-
-//==============================================
-// マテリアルのの取得
-//==============================================
-DWORD CModelManager::GetNumMat(int nIdx)
-{
-	// モデルの数
-	int nNumModel = static_cast<int>(m_apModelInfo.size());
-
-	if (nIdx < 0 || nIdx >= nNumModel)
-	{
-		return 0;
-	}
-
-	return m_apModelInfo[nIdx].dwNumMat;
-}
-
-//==============================================
-// 大きさの取得
-//==============================================
-D3DXVECTOR3 CModelManager::GetSize(int nIdx)
-{
-	// モデルの数
-	int nNumModel = static_cast<int>(m_apModelInfo.size());
-
-	if (nIdx < 0 || nIdx >= nNumModel)
-	{
-		return VEC3_NULL;
-	}
-
-	// 頂点座標の取得
-	int nNumVtx;	// 頂点数
-	DWORD sizeFVF;  // 頂点フォーマットのサイズ
-	BYTE* pVtxBuff; // 頂点バッファへのポインタ
-
-	// 頂点数の取得
-	nNumVtx = m_apModelInfo[nIdx].pMesh->GetNumVertices();
-
-	// 頂点フォーマットのサイズ取得
-	sizeFVF = D3DXGetFVFVertexSize(m_apModelInfo[nIdx].pMesh->GetFVF());
-
-	// 頂点バッファのロック
-	m_apModelInfo[nIdx].pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
-
-	for (int nCntVtx = 0; nCntVtx < nNumVtx; nCntVtx++)
-	{
-		// 頂点座標の代入
-		D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff;
-
-		// 頂点座標を比較してブロックの最小値,最大値を取得
-		if (vtx.x < m_apModelInfo[nIdx].vtxMin.x)
-		{
-			m_apModelInfo[nIdx].vtxMin.x = vtx.x;
-		}
-		if (vtx.y < m_apModelInfo[nIdx].vtxMin.y)
-		{
-			m_apModelInfo[nIdx].vtxMin.y = vtx.y;
-		}
-		if (vtx.z < m_apModelInfo[nIdx].vtxMin.z)
-		{
-			m_apModelInfo[nIdx].vtxMin.z = vtx.z;
-		}
-		if (vtx.x > m_apModelInfo[nIdx].vtxMax.x)
-		{
-			m_apModelInfo[nIdx].vtxMax.x = vtx.x;
-		}
-		if (vtx.y > m_apModelInfo[nIdx].vtxMax.y)
-		{
-			m_apModelInfo[nIdx].vtxMax.y = vtx.y;
-		}
-		if (vtx.z > m_apModelInfo[nIdx].vtxMax.z)
-		{
-			m_apModelInfo[nIdx].vtxMax.z = vtx.z;
-		}
-
-		// 頂点フォーマットのサイズ分ポインタを進める
-		pVtxBuff += sizeFVF;
-	}
-
-	// 大きさ
-	D3DXVECTOR3 Size = VEC3_NULL;
-
-	// サイズに代入
-	Size.x = m_apModelInfo[nIdx].vtxMax.x - m_apModelInfo[nIdx].vtxMin.x;
-	Size.y = m_apModelInfo[nIdx].vtxMax.y - m_apModelInfo[nIdx].vtxMin.y;
-	Size.z = m_apModelInfo[nIdx].vtxMax.z - m_apModelInfo[nIdx].vtxMin.z;
-
-	// 頂点バッファのアンロック
-	m_apModelInfo[nIdx].pMesh->UnlockVertexBuffer();
-
-	return Size;
+	return m_apModelInfo[nIdx];
 }
 
 //==============================================
@@ -264,35 +166,8 @@ HRESULT CModelManager::Load(void)
 				// モデルの名前を代入
 				const char* MODEL_NAME = modelName.c_str();
 
-				// モデルの情報
-				ModelInfo info;
-
-				// 値をクリアしておく
-				memset(&info, NULL, sizeof(info));
-
-				////Xファイルの読み込み
-				if (FAILED(D3DXLoadMeshFromX(MODEL_NAME,
-					D3DXMESH_SYSTEMMEM,
-					pDevice,
-					NULL,
-					&info.pBuffMat,
-					NULL,
-					&info.dwNumMat,
-					&info.pMesh)))
-				{
-					// メッセージボックスの表示
-					MessageBox(NULL, MODEL_NAME, "モデルが読み込めませんでした", MB_OK | MB_ICONWARNING);
-
-					return E_FAIL;
-				}
-
-				// 文字列をコピーする
-				strncpy(info.filepath, MODEL_NAME, sizeof(info.filepath));
-
-				// 要素の設定
-				m_apModelInfo.push_back(info);
-
-				m_nNumAll++;
+				// モデルの読み込み
+				Register(MODEL_NAME);
 			}
 		}
 
@@ -338,4 +213,95 @@ void CModelManager::UnLoad(void)
 
 	// 要素のクリア
 	m_apModelInfo.clear();
+}
+
+//==============================================
+// 大きさの設定処理
+//==============================================
+void CModelManager::SetSize(ModelInfo* pModelInfo)
+{
+	// 頂点座標の取得
+	int nNumVtx;	// 頂点数
+	DWORD sizeFVF;  // 頂点フォーマットのサイズ
+	BYTE* pVtxBuff; // 頂点バッファへのポインタ
+
+	// 頂点数の取得
+	nNumVtx = pModelInfo->pMesh->GetNumVertices();
+
+	// 頂点フォーマットのサイズ取得
+	sizeFVF = D3DXGetFVFVertexSize(pModelInfo->pMesh->GetFVF());
+
+	// 頂点バッファのロック
+	pModelInfo->pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
+
+	// 最大の頂点、最小の頂点
+	D3DXVECTOR3 vtxMin = VEC3_NULL, vtxMax = VEC3_NULL;
+
+	for (int nCntVtx = 0; nCntVtx < nNumVtx; nCntVtx++)
+	{
+		// 頂点座標の代入
+		D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff;
+
+		// 頂点座標を比較してブロックの最小値,最大値を取得
+		if (vtx.x < vtxMin.x)
+		{
+			vtxMin.x = vtx.x;
+		}
+		if (vtx.y < vtxMin.y)
+		{
+			vtxMin.y = vtx.y;
+		}
+		if (vtx.z < vtxMin.z)
+		{
+			vtxMin.z = vtx.z;
+		}
+		if (vtx.x > vtxMax.x)
+		{
+			vtxMax.x = vtx.x;
+		}
+		if (vtx.y > vtxMax.y)
+		{
+			vtxMax.y = vtx.y;
+		}
+		if (vtx.z > vtxMax.z)
+		{
+			vtxMax.z = vtx.z;
+		}
+
+		// 頂点フォーマットのサイズ分ポインタを進める
+		pVtxBuff += sizeFVF;
+	}
+
+	// サイズに代入
+	pModelInfo->Size.x = vtxMax.x - vtxMin.x;
+	pModelInfo->Size.y = vtxMax.y - vtxMin.y;
+	pModelInfo->Size.z = vtxMax.z - vtxMin.z;
+
+	// 頂点バッファのアンロック
+	pModelInfo->pMesh->UnlockVertexBuffer();
+}
+
+//==============================================
+// マテリアルの設定処理
+//==============================================
+void CModelManager::SetMaterial(ModelInfo* pModelInfo)
+{
+	// マテリアルの取得
+	D3DXMATERIAL* pMat;//マテリアルへのポインタ
+
+	//マテリアルのデータへのポインタを取得
+	pMat = (D3DXMATERIAL*)pModelInfo->pBuffMat->GetBufferPointer();
+
+	// テクスチャマネージャーの取得
+	CTextureManager* pTextureManager = CManager::GetTexture();
+
+	for (int nCnt = 0; nCnt < (int)pModelInfo->dwNumMat; nCnt++)
+	{
+		int nTextureIdx = -1;
+
+		// ファイル名を使用してテクスチャを読み込む
+		nTextureIdx = pTextureManager->Register(pMat[nCnt].pTextureFilename);
+
+		pModelInfo->nTextureIdx.push_back(nTextureIdx);
+	}
 }

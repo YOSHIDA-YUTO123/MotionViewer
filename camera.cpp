@@ -212,18 +212,21 @@ void CCamera::MouseView(void)
 	// 同時押し
 	if (pMouse->OnMousePress(0) && pMouse->OnMousePress(1))
 	{
-		D3DXVECTOR2 dir = fAngle;
+		D3DXVECTOR3 eye = m_posR - m_posV;
+		D3DXVec3Normalize(&eye, &eye);
 
-		//D3DXVec2Normalize(&dir, &dir);
+		D3DXVECTOR3 cross, cameraUp;
+		D3DXVec3Cross(&cross, &m_vecU, &eye);
 
-		// プレイヤーの移動量
-		float moveX = dir.x * cosf(m_rot.y) + dir.y * sinf(m_rot.y);
-		float moveZ = dir.x * sinf(m_rot.y) - dir.y * cosf(m_rot.y);
+		D3DXVec3Cross(&cameraUp, &eye, &cross);
+		D3DXVECTOR3 move = cross * (-fAngle.x);
 
-		m_posV.x += moveX;
-		m_posV.z += moveZ;
-		m_posR.x += moveX;
-		m_posR.z += moveZ;
+		// 縦移動
+		move += cameraUp * fAngle.y;
+
+		// カメラの位置更新
+		m_posV += move;
+		m_posR += move;
 
 	}
 	else if (pMouse->OnMousePress(1))

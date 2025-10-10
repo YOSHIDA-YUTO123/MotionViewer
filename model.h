@@ -34,6 +34,13 @@ public:
 	void Draw(const D3DXVECTOR4 Diffuse, const bool bDiffuseCange);
 	void DrawShadow(void);
 
+	/// <summary>
+	/// マウスとの当たり判定
+	/// </summary>
+	/// <param name="pOutDistance"></param>
+	/// <returns>判定結果</returns>
+	bool CollisionMouse(void);
+
 	D3DXVECTOR3 GetPosition(void) const { return m_pos; }
 	D3DXVECTOR3 GetRotaition(void) const { return m_rot; }
 	D3DXVECTOR3 GetOffPos(void) const { return m_offpos; }
@@ -70,6 +77,5 @@ private:
 	CModel* m_pParent;			// 親モデルへのポインタ
 	int m_nParentIndex;			// 親モデルのインデックス番号
 	int m_nModelIdx;			// モデルのインデックス
-	int* m_pTextureIdx;			// テクスチャのインデックス
 };
 #endif

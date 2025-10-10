@@ -9,6 +9,8 @@
 // インクルードファイル
 //***************************************************
 #include "math.h"
+#include "manager.h"
+#include "renderer.h"
 
 //===================================================
 // 距離の取得
@@ -212,4 +214,53 @@ bool math::ShowOpenFileDialog(char* filePath, size_t max_length)
 
 	// ダイアログボックスを表示し、選択されたファイルパスを取得
 	return GetOpenFileName(&ofn) == TRUE;
+}
+
+//===================================================
+// マウスのレイの取得
+//===================================================
+void math::GetMouseRay(D3DXVECTOR3* pRayOrigin, D3DXVECTOR3* OutDir)
+{
+	// デバイスの取得
+	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
+
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(FindWindowA(CLASS_NAME, WINDOW_NAME), &mousePos); // ウィンドウ内座標に変換
+
+	// プロジェクションマトリックスとビューマトリックス
+	D3DXMATRIX matView, matproj;
+
+	// プロジェクションマトリックスとビューマトリックスを取得
+	pDevice->GetTransform(D3DTS_VIEW, &matView);
+	pDevice->GetTransform(D3DTS_PROJECTION, &matproj);
+
+	RECT rect;
+	GetClientRect(FindWindowA(CLASS_NAME, nullptr), &rect);
+
+	int screenWidth = rect.right - rect.left;
+	int screenHeight = rect.bottom - rect.top;
+
+	// NDC (-1～1)に変換
+	float pX = ((2.0f * mousePos.x) / screenWidth) - 1.0f;
+	float pY = ((2.0f * mousePos.y) / screenHeight) - 1.0f;
+	pY *= -1.0f;
+
+	// ビュー空間のNear/Far
+	D3DXVECTOR3 vNear = D3DXVECTOR3(pX, pY, 0.0f);
+	D3DXVECTOR3 vFar = D3DXVECTOR3(pX, pY, 1.0f);
+
+	// 合成行列の逆行列
+	D3DXMATRIX matInvVP;
+	D3DXMATRIX matVP = matView * matproj;
+	D3DXMatrixInverse(&matInvVP, NULL, &matVP);
+
+	// ワールド座標に変換
+	D3DXVec3TransformCoord(&vNear, &vNear, &matInvVP);
+	D3DXVec3TransformCoord(&vFar, &vFar, &matInvVP);
+
+	// レイの原点
+	*pRayOrigin = vNear;
+	D3DXVECTOR3 Ray = vFar - vNear;
+	D3DXVec3Normalize(OutDir, &Ray);
 }

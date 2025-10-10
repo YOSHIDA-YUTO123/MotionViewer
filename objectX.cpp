@@ -19,7 +19,6 @@ CObjectX::CObjectX(int nPriority) : CObject(nPriority)
 {
 	memset(m_mtxWorld, NULL, sizeof(D3DXMATRIX));
 	m_pos = VEC3_NULL;
-	m_pTextureIdx = nullptr;
 	m_rot = VEC3_NULL;
 	m_nModelIdx = NULL;
 }
@@ -83,15 +82,7 @@ HRESULT CObjectX::Init(void)
 // 終了処理
 //===================================================
 void CObjectX::Uninit(void)
-{
-	if (m_pTextureIdx != nullptr)
-	{
-		delete []m_pTextureIdx;
-		m_pTextureIdx = nullptr;
-	}
-	
-
-
+{	
 	// 自分自身の破棄
 	Release();
 }
@@ -149,32 +140,28 @@ void CObjectX::Draw(void)
 		return;
 	}
 
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModel->GetModelInfo(m_nModelIdx);
+
 	//マテリアルのデータへのポインタを取得
-	pMat = (D3DXMATERIAL*)pModel->GetBuffMat(m_nModelIdx)->GetBufferPointer();
+	pMat = (D3DXMATERIAL*)modelInfo.pBuffMat->GetBufferPointer();
 
-	// マテリアルの総数の取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-
-	// メッシュの取得
-	LPD3DXMESH pMesh = pModel->GetMesh(m_nModelIdx);
-
-	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	for (int nCntMat = 0; nCntMat < (int)modelInfo.dwNumMat; nCntMat++)
 	{
 		//マテリアルの設定
 		pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
 
-		if (m_pTextureIdx[nCntMat] != -1)
+		// マテリアルがないなら
+		if (modelInfo.nTextureIdx.empty())
 		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, pTexture->GetAdress(m_pTextureIdx[nCntMat]));
+			continue;
 		}
-		else
-		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, NULL);
-		}
+
+		// テクスチャの設定
+		pDevice->SetTexture(0, pTexture->GetAdress(modelInfo.nTextureIdx[nCntMat]));
+
 		//モデル(パーツ)の描画
-		pMesh->DrawSubset(nCntMat);
+		modelInfo.pMesh->DrawSubset(nCntMat);
 	}
 
 	//保存していたマテリアルを元に戻す
@@ -224,17 +211,19 @@ void CObjectX::DrawShadow(void)
 	// モデルの取得
 	CModelManager* pModel = CManager::GetModel();
 
-	// メッシュの取得
-	LPD3DXMESH pMesh = pModel->GetMesh(m_nModelIdx);
+	if (m_nModelIdx == -1)
+	{
+		//保存していたマテリアルを元に戻す
+		pDevice->SetMaterial(&matDef);
 
-	// メッシュがnullptrだったら関数を抜ける
-	if (pMesh == nullptr) return;
-	
-	// マテリアルの数の取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
+		return;
+	}
+
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModel->GetModelInfo(m_nModelIdx);
 
 	// 影の描画
-	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	for (int nCntMat = 0; nCntMat < (int)modelInfo.dwNumMat; nCntMat++)
 	{
 		// 影のマテリアルの設定
 		pDevice->SetMaterial(&matShadow);
@@ -243,7 +232,7 @@ void CObjectX::DrawShadow(void)
 		pDevice->SetTexture(0, NULL);
 
 		// 影の描画
-		pMesh->DrawSubset(nCntMat);
+		modelInfo.pMesh->DrawSubset(nCntMat);
 	}
 	
 	// マテリアルをもとに戻す
@@ -258,33 +247,12 @@ HRESULT CObjectX::LoadModel(const char* pXFileName)
 	// モデルクラスの取得
 	CModelManager* pModel = CManager::GetModel();
 
-	// テクスチャクラスの取得
-	CTextureManager* pTexture = CManager::GetTexture();
-
 	// インデックスの登録
 	m_nModelIdx = pModel->Register(pXFileName);
 
 	if (m_nModelIdx == -1)
 	{
 		return E_FAIL;
-	}
-
-	// マテリアルの取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-	LPD3DXBUFFER pBuffMat = pModel->GetBuffMat(m_nModelIdx);
-
-	D3DXMATERIAL* pMat;//マテリアルへのポインタ
-
-	//マテリアルのデータへのポインタを取得
-	pMat = (D3DXMATERIAL*)pBuffMat->GetBufferPointer();
-
-	// マテリアルの数分メモリの確保
-	m_pTextureIdx = new int[dwNumMat];
-
-	for (int nCnt = 0; nCnt < (int)dwNumMat; nCnt++)
-	{
-		// ファイル名を使用してテクスチャを読み込む
-		m_pTextureIdx[nCnt] = pTexture->Register(pMat[nCnt].pTextureFilename);
 	}
 
 	return S_OK;

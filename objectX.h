@@ -50,6 +50,5 @@ private:
 	D3DXVECTOR3 m_rot;		// 向き
 	D3DXMATRIX m_mtxWorld;	// ワールドマトリックス
 	int m_nModelIdx;		// モデルのインデックス
-	int *m_pTextureIdx;		// テクスチャのインデックス
 };
 #endif

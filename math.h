@@ -107,5 +107,6 @@ namespace math
 	D3DXVECTOR3 MatrixToEulerXYZ(const D3DXMATRIX mtxWorld);
 	bool ShowSaveFileDialog(char* filePath, size_t maxLength);
 	bool ShowOpenFileDialog(char* filePath, size_t max_length);
+	void GetMouseRay(D3DXVECTOR3* pRayOrigin, D3DXVECTOR3* OutDir);
 }
 #endif

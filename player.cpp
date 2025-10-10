@@ -620,6 +620,18 @@ bool CPlayer::SetPlayerModelElement(CImGuiManager *pImGui)
 			m_nModelIndex = Clamp(m_nModelIndex, 0, m_nNumModel - 1);
 		}
 
+		// キーボードの取得
+		CInputMouse* pMouse = CManager::GetInputMouse();
+
+		// キーボードの取得
+		CInputKeyboard* pKeyboard = CManager::GetInputKeyboard();
+
+		if (pMouse->OnMouseTriggerDown(0) && !pKeyboard->GetPress(DIK_LALT))
+		{
+			// マウスの当たり判定
+			CollisionMouse();
+		}
+
 		int nParent = m_apModel[m_nModelIndex]->GetParentID();
 		
 		ImGui::SameLine();
@@ -985,6 +997,26 @@ void CPlayer::ChangeState(std::shared_ptr<CPlayerState> pNewState)
 
 	// 状態の変更
 	m_pMachine->Change(pNewState);
+}
+
+//===================================================
+// マウスの当たり判定
+//===================================================
+void CPlayer::CollisionMouse(void)
+{
+	int nCnt = 0;
+
+	// 要素を調べる
+	for (auto& model : m_apModel)
+	{
+		if (model->CollisionMouse())
+		{
+			m_nModelIndex = nCnt;
+			break;
+		}
+
+		nCnt++;
+	}
 }
 
 //===================================================

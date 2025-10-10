@@ -14,6 +14,7 @@
 #include "manager.h"
 #include"renderer.h"
 #include<stdio.h>
+#include "math.h"
 
 //===================================================
 // コンストラクタ
@@ -27,7 +28,6 @@ CModel::CModel()
 	m_offrot = VEC3_NULL;
 	m_pParent = nullptr;
 	m_nModelIdx = NULL;
-	m_pTextureIdx = nullptr;
 	m_nParentIndex = NULL;
 	memset(&m_Pose, NULL, sizeof(m_Pose));
 
@@ -45,12 +45,6 @@ CModel::~CModel()
 //===================================================
 HRESULT CModel::Init(const char* pModelName)
 {
-	// モデルクラスの取得
-	CModelManager* pModel = CManager::GetModel();
-
-	// テクスチャクラスの取得
-	CTextureManager* pTexture = CManager::GetTexture();
-
 	// モデルマネージャークラスの取得
 	CModelManager* pModelManager = CManager::GetModel();
 
@@ -62,24 +56,6 @@ HRESULT CModel::Init(const char* pModelName)
 		return E_FAIL;
 	}
 
-	// マテリアルの取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-	LPD3DXBUFFER pBuffMat = pModel->GetBuffMat(m_nModelIdx);
-
-	D3DXMATERIAL* pMat;//マテリアルへのポインタ
-
-	//マテリアルのデータへのポインタを取得
-	pMat = (D3DXMATERIAL*)pBuffMat->GetBufferPointer();
-
-	// マテリアルの数分メモリの確保
-	m_pTextureIdx = new int[dwNumMat];
-
-	for (int nCnt = 0; nCnt < (int)dwNumMat; nCnt++)
-	{
-		// ファイル名を使用してテクスチャを読み込む
-		m_pTextureIdx[nCnt] = pTexture->Register(pMat[nCnt].pTextureFilename);
-	}
-
 	return S_OK;
 }
 
@@ -88,11 +64,6 @@ HRESULT CModel::Init(const char* pModelName)
 //===================================================
 void CModel::Uninit(void)
 {
-	if (m_pTextureIdx != nullptr)
-	{
-		delete[]m_pTextureIdx;
-		m_pTextureIdx = nullptr;
-	}
 }
 
 //===================================================
@@ -165,32 +136,28 @@ void CModel::Draw(void)
 		return;
 	}
 
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModel->GetModelInfo(m_nModelIdx);
+
 	//マテリアルのデータへのポインタを取得
-	pMat = (D3DXMATERIAL*)pModel->GetBuffMat(m_nModelIdx)->GetBufferPointer();
+	pMat = (D3DXMATERIAL*)modelInfo.pBuffMat->GetBufferPointer();
 
-	// マテリアルの総数の取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-
-	// メッシュの取得
-	LPD3DXMESH pMesh = pModel->GetMesh(m_nModelIdx);
-
-	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	for (int nCntMat = 0; nCntMat < (int)modelInfo.dwNumMat; nCntMat++)
 	{
 		//マテリアルの設定
 		pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
 
-		if (m_pTextureIdx[nCntMat] != -1)
+		// マテリアルがないなら
+		if (modelInfo.nTextureIdx.empty())
 		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, pTexture->GetAdress(m_pTextureIdx[nCntMat]));
+			continue;
 		}
-		else
-		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, NULL);
-		}
+
+		// テクスチャの設定
+		pDevice->SetTexture(0, pTexture->GetAdress(modelInfo.nTextureIdx[nCntMat]));
+
 		//モデル(パーツ)の描画
-		pMesh->DrawSubset(nCntMat);
+		modelInfo.pMesh->DrawSubset(nCntMat);
 	}
 
 	//保存していたマテリアルを元に戻す
@@ -260,16 +227,13 @@ void CModel::Draw(const D3DXVECTOR4 Diffuse,const bool bDiffuseCange)
 		return;
 	}
 
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModel->GetModelInfo(m_nModelIdx);
+
 	//マテリアルのデータへのポインタを取得
-	pMat = (D3DXMATERIAL*)pModel->GetBuffMat(m_nModelIdx)->GetBufferPointer();
+	pMat = (D3DXMATERIAL*)modelInfo.pBuffMat->GetBufferPointer();
 
-	// マテリアルの総数の取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-
-	// メッシュの取得
-	LPD3DXMESH pMesh = pModel->GetMesh(m_nModelIdx);
-
-	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	for (int nCntMat = 0; nCntMat < (int)modelInfo.dwNumMat; nCntMat++)
 	{
 		D3DXMATERIAL Mat = pMat[nCntMat];
 		
@@ -290,18 +254,17 @@ void CModel::Draw(const D3DXVECTOR4 Diffuse,const bool bDiffuseCange)
 		//マテリアルの設定
 		pDevice->SetMaterial(&Mat.MatD3D);
 
-		if (m_pTextureIdx[nCntMat] != -1)
+		// マテリアルがないなら
+		if (modelInfo.nTextureIdx.empty())
 		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, pTexture->GetAdress(m_pTextureIdx[nCntMat]));
+			continue;
 		}
-		else
-		{
-			//テクスチャの設定
-			pDevice->SetTexture(0, NULL);
-		}
+
+		// テクスチャの設定
+		pDevice->SetTexture(0, pTexture->GetAdress(modelInfo.nTextureIdx[nCntMat]));
+
 		//モデル(パーツ)の描画
-		pMesh->DrawSubset(nCntMat);
+		modelInfo.pMesh->DrawSubset(nCntMat);
 	}
 
 	//保存していたマテリアルを元に戻す
@@ -342,6 +305,20 @@ void CModel::DrawShadow(void)
 	//現在のマテリアルを取得
 	pDevice->GetMaterial(&matDef);
 
+	// モデルの取得
+	CModelManager* pModel = CManager::GetModel();
+
+	if (m_nModelIdx == -1)
+	{
+		//保存していたマテリアルを元に戻す
+		pDevice->SetMaterial(&matDef);
+
+		return;
+	}
+
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModel->GetModelInfo(m_nModelIdx);
+
 	// 半透明の黒マテリアルをセット
 	D3DMATERIAL9 matShadow = {};
 
@@ -351,20 +328,8 @@ void CModel::DrawShadow(void)
 	matShadow.Diffuse.b = 0.0f;
 	matShadow.Diffuse.a = 1.0f;
 
-	// モデルの取得
-	CModelManager* pModel = CManager::GetModel();
-
-	// メッシュの取得
-	LPD3DXMESH pMesh = pModel->GetMesh(m_nModelIdx);
-
-	// メッシュがnullptrだったら関数を抜ける
-	if (pMesh == nullptr) return;
-
-	// マテリアルの数の取得
-	DWORD dwNumMat = pModel->GetNumMat(m_nModelIdx);
-
 	// 影の描画
-	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	for (int nCntMat = 0; nCntMat < (int)modelInfo.dwNumMat; nCntMat++)
 	{
 		// 影のマテリアルの設定
 		pDevice->SetMaterial(&matShadow);
@@ -373,11 +338,72 @@ void CModel::DrawShadow(void)
 		pDevice->SetTexture(0, NULL);
 
 		// 影の描画
-		pMesh->DrawSubset(nCntMat);
+		modelInfo.pMesh->DrawSubset(nCntMat);
 	}
 
 	// マテリアルをもとに戻す
 	pDevice->SetMaterial(&matDef);
+}
+
+//===================================================
+// マウスとの当たり判定
+//===================================================
+bool CModel::CollisionMouse(void)
+{
+	BOOL hit = false;
+	DWORD faceIndex;
+	float fDistance = FLT_MAX;
+	FLOAT baryU, baryV; // 当たったポリゴンの位置
+
+	// モデルマネージャーの取得
+	CModelManager* pModelManager = CManager::GetModel();
+
+	// モデルがないなら
+	if (m_nModelIdx == -1)
+	{
+		return false;
+	}
+
+	// モデルの情報の取得
+	CModelManager::ModelInfo modelInfo = pModelManager->GetModelInfo(m_nModelIdx);
+
+	// レイの原点
+	D3DXVECTOR3 rayOrigin, rayDir;
+
+	// レイの取得
+	math::GetMouseRay(&rayOrigin, &rayDir);
+
+	// モデルのワールド行列
+	D3DXMATRIX matWorld = m_mtxWorld;
+
+	// 逆行列
+	D3DXMATRIX matInvWorld;
+	D3DXMatrixInverse(&matInvWorld, NULL, &matWorld);
+
+	// レイをローカル空間に変換
+	D3DXVec3TransformCoord(&rayOrigin, &rayOrigin, &matInvWorld);
+	D3DXVec3TransformNormal(&rayDir, &rayDir, &matInvWorld);
+	D3DXVec3Normalize(&rayDir, &rayDir);
+
+	// レイとポリゴンの当たり判定
+	D3DXIntersect(
+		modelInfo.pMesh,
+		&rayOrigin,
+		&rayDir,
+		&hit,
+		&faceIndex,
+		&baryU,
+		&baryV,
+		&fDistance,
+		nullptr,
+		nullptr);
+
+	if (hit)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 //===================================================

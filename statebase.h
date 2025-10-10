@@ -37,6 +37,7 @@ private:
 class CStateMachine
 {
 public:
+
 	CStateMachine();
 	~CStateMachine();
 	void Change(std::shared_ptr<CStateBase> pNewState);
